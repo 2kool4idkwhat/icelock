@@ -1,4 +1,14 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
+
+let
+
+  tcpBindTest =
+    type: icelockArg:
+    # SIGINT so that python exits with 0
+    ''machine.${type}("timeout --signal=SIGINT --preserve-status 3s icelock --rx / ${icelockArg} -- ${lib.getExe pkgs.python3} -m http.server")'';
+
+in
+
 pkgs.testers.runNixOSTest {
   name = "basic";
   nodes.machine =
@@ -32,5 +42,10 @@ pkgs.testers.runNixOSTest {
 
     machine.fail("${./signal-scoped.sh}")
     machine.succeed("${./signal-unscoped.sh}")
+
+    ${tcpBindTest "fail" ""}
+    ${tcpBindTest "succeed" "--bind-tcp 8000"}
+    ${tcpBindTest "fail" "--connect-tcp 8000"}
+    ${tcpBindTest "succeed" "--unrestricted-net"}
   '';
 }

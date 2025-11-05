@@ -49,7 +49,7 @@
           lib = pkgs.lib;
         in
         {
-          basic = import ./tests/basic.nix { inherit pkgs; };
+          basic = import ./tests/basic.nix { inherit pkgs lib; };
           landlock-disabled = import ./tests/landlock-disabled.nix { inherit pkgs lib; };
         }
       );
