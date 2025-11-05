@@ -29,5 +29,8 @@ pkgs.testers.runNixOSTest {
     machine.fail("icelock --rx /nix/store --ro /tmp -- touch /tmp/something")
     machine.fail("icelock --rx /nix/store --rx /tmp -- touch /tmp/something")
     machine.succeed("icelock --rx /nix/store --rw /tmp -- touch /tmp/something")
+
+    machine.fail("${./signal-scoped.sh}")
+    machine.succeed("${./signal-unscoped.sh}")
   '';
 }
