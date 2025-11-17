@@ -8,5 +8,5 @@ buildGoModule {
   src = ./.;
   meta.mainProgram = "icelock";
 
-  vendorHash = "sha256-WWoSV50GJoJkA5InvgPJW7VzT3gGjlwJTFcOg+mENVU=";
+  vendorHash = "sha256-s9NzEDxNtfUMmXbPqt/n2j/4ORN8MFaqdavmTRuNbqo=";
 }
