@@ -3,6 +3,7 @@ package main
 import (
 	"icelock/log"
 	"os"
+	"strings"
 
 	"github.com/landlock-lsm/go-landlock/landlock"
 	llsys "github.com/landlock-lsm/go-landlock/landlock/syscall"
@@ -21,6 +22,17 @@ const (
 	// The set of access rights associated with read/write access
 	accessFSReadWrite landlock.AccessFSSet = accessFSRead | accessFSWrite
 )
+
+var home string
+
+func init() {
+	home = os.Getenv("HOME")
+
+	if home == "" {
+		log.Error("$HOME is not set")
+		os.Exit(1)
+	}
+}
 
 func setupLandlock(cfg *config) {
 	var rules []landlock.Rule
@@ -96,40 +108,51 @@ func isDir(path string) bool {
 	return fileInfo.IsDir()
 }
 
+func expandTilde(path string) string {
+	if strings.HasPrefix(path, "~") {
+		return strings.Replace(path, "~", home, 1)
+	}
+
+	return path
+}
+
 func rxPath(path string) landlock.FSRule {
-	log.Debug("Adding RX path %s", path)
+	expandedPath := expandTilde(path)
+	log.Debug("Adding RX path %s", expandedPath)
 
 	accessRights := accessFSRead&accessFile | llsys.AccessFSExecute
 
-	if isDir(path) {
+	if isDir(expandedPath) {
 		accessRights = accessFSRead | llsys.AccessFSExecute
 	}
 
-	return landlock.PathAccess(accessRights, path).IgnoreIfMissing()
+	return landlock.PathAccess(accessRights, expandedPath).IgnoreIfMissing()
 }
 
 func roPath(path string) landlock.FSRule {
-	log.Debug("Adding RO path %s", path)
+	expandedPath := expandTilde(path)
+	log.Debug("Adding RO path %s", expandedPath)
 
 	accessRights := accessFSRead & accessFile
 
-	if isDir(path) {
+	if isDir(expandedPath) {
 		accessRights = accessFSRead
 	}
 
-	return landlock.PathAccess(accessRights, path).IgnoreIfMissing()
+	return landlock.PathAccess(accessRights, expandedPath).IgnoreIfMissing()
 }
 
 func rwPath(path string) landlock.FSRule {
-	log.Debug("Adding RW path %s", path)
+	expandedPath := expandTilde(path)
+	log.Debug("Adding RW path %s", expandedPath)
 
 	accessRights := accessFSReadWrite & accessFile
 
-	if isDir(path) {
+	if isDir(expandedPath) {
 		accessRights = accessFSReadWrite
 	}
 
-	return landlock.PathAccess(accessRights, path).IgnoreIfMissing()
+	return landlock.PathAccess(accessRights, expandedPath).IgnoreIfMissing()
 }
 
 func setupLandlockIpc(cfg *config) {
