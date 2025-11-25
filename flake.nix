@@ -22,6 +22,7 @@
         in
         {
           icelock = pkgs.callPackage ./src { };
+          default = self.outputs.packages.${system}.icelock;
         }
       );
 
