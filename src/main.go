@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "25.11.2"
+const version = "25.12.1"
 
 type config struct {
 	LogLevel string
@@ -27,6 +27,13 @@ type config struct {
 	NetConnectTcp []int
 
 	IpcScoped bool
+
+	SeccompEnabled     bool
+	SeccompPrint       bool
+	SeccompKillBlocked bool
+
+	Syscalls       []string
+	SocketFamilies []string
 }
 
 func main() {
@@ -88,6 +95,34 @@ func main() {
 				Name:  "unscoped-ipc",
 				Usage: "don't scope IPC (signals and abstract unix sockets)",
 			},
+
+			&cli.BoolFlag{
+				Name:     "no-seccomp",
+				Usage:    "don't filter syscalls",
+				Category: "Seccomp",
+			},
+			&cli.BoolFlag{
+				Name:     "seccomp-print",
+				Usage:    "print a human-readable version of the filter and exit",
+				Category: "Seccomp",
+			},
+			&cli.BoolFlag{
+				Name:     "seccomp-kill",
+				Usage:    "if a syscall is blocked, kill the process",
+				Category: "Seccomp",
+			},
+
+			&cli.StringSliceFlag{
+				Name:     "syscalls",
+				Usage:    `extra allowed syscall groups ("keyring", "chmod", "chown", "xattr", "privileged")`,
+				Category: "Seccomp",
+			},
+			&cli.StringSliceFlag{
+				Name:     "af",
+				Usage:    `allowed socket address families ("netlink", "unix", "inet", "other")`,
+				Category: "Seccomp",
+				Value:    []string{"netlink", "unix", "inet"},
+			},
 		},
 
 		Action: func(ctx context.Context, cmd *cli.Command) error {
@@ -116,6 +151,13 @@ func main() {
 				NetConnectTcp: cmd.IntSlice("connect-tcp"),
 
 				IpcScoped: !cmd.Bool("unscoped-ipc"),
+
+				SeccompEnabled:     !cmd.Bool("no-seccomp"),
+				SeccompPrint:       cmd.Bool("seccomp-print"),
+				SeccompKillBlocked: cmd.Bool("seccomp-kill"),
+
+				Syscalls:       cmd.StringSlice("syscalls"),
+				SocketFamilies: cmd.StringSlice("af"),
 			}
 
 			log.SetLevel(cfg.LogLevel)
@@ -134,6 +176,8 @@ func main() {
 			// things, since we're getting ipc scoping support from the "scoped" branch
 			// of go-landlock
 			setupLandlockIpc(&cfg)
+
+			setupSeccomp(&cfg)
 
 			log.Info("Executing: %s, args: %v", appExe, getAppArgs(args))
 			err = syscall.Exec(appExe, args, os.Environ())

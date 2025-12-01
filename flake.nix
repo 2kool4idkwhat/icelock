@@ -36,6 +36,8 @@
             buildInputs = with pkgs; [
               go
               gopls
+              libseccomp
+              pkg-config
 
               nil
             ];

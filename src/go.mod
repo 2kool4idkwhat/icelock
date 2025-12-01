@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/seccomp/libseccomp-golang v0.11.1 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	kernel.org/pub/linux/libs/security/libcap/psx v1.2.70 // indirect
 )
