@@ -47,5 +47,10 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "succeed" "--bind-tcp 8000"}
     ${tcpBindTest "fail" "--connect-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
+
+    machine.fail("icelock --unrestricted-fs -- busctl")
+    machine.succeed("icelock --unrestricted-fs --af unix -- busctl")
+    machine.fail("icelock --unrestricted-fs --af inet -- busctl")
+    machine.succeed("icelock --unrestricted-fs --no-seccomp -- busctl")
   '';
 }
