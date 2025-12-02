@@ -5,7 +5,7 @@ let
   tcpBindTest =
     type: icelockArg:
     # SIGINT so that python exits with 0
-    ''machine.${type}("timeout --signal=SIGINT --preserve-status 3s icelock --rx / ${icelockArg} -- ${lib.getExe pkgs.python3} -m http.server")'';
+    ''machine.${type}("timeout --signal=SIGINT --preserve-status 3s icelock --rx / --af inet ${icelockArg} -- ${lib.getExe pkgs.python3} -m http.server")'';
 
 in
 

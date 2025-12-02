@@ -188,9 +188,6 @@ func setupSeccomp(cfg *config) {
 			case "other":
 				afOther = true
 
-			// no-op so we can do --af=none
-			case "none":
-
 			case "inet6":
 				log.Warn("AF_INET6 is included with '--af inet', use that instead of '--af inet6'")
 

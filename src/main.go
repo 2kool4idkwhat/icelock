@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "25.12.1"
+const version = "25.12.2"
 
 type config struct {
 	LogLevel string
@@ -121,7 +121,6 @@ func main() {
 				Name:     "af",
 				Usage:    `allowed socket address families ("netlink", "unix", "inet", "other")`,
 				Category: "Seccomp",
-				Value:    []string{"netlink", "unix", "inet"},
 			},
 		},
 
