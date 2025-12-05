@@ -19,11 +19,22 @@
         system:
         let
           pkgs = nixpkgsFor.${system};
+
+          makeIcelockWrapper = self.outputs.lib.${system}.makeIcelockWrapper;
         in
         {
           icelock = pkgs.callPackage ./src { };
           default = self.outputs.packages.${system}.icelock;
         }
+        // (import ./example.nix { inherit pkgs makeIcelockWrapper; })
+      );
+
+      lib = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        import ./lib.nix { inherit pkgs; }
       );
 
       devShells = forAllSystems (
