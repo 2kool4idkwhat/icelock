@@ -22,6 +22,7 @@ in
       package,
       extraBinPaths ? [ ],
       appFlags ? [ ],
+      env ? { },
 
       restrictFs ? true,
       ro ? [ ],
@@ -54,6 +55,8 @@ in
     assert isList socketFamilies;
     assert isList syscalls;
     let
+      envVars = lib.mapAttrsToList (name: value: ''${name}='"${value}"' '') env;
+
       icelockArgs = builtins.concatStringsSep " " (
         lib.flatten [
 
@@ -90,6 +93,11 @@ in
           rm "$file"
 
           echo "#!${lib.getExe pkgs.bashNonInteractive}" > "$file"
+
+          for var in ${builtins.concatStringsSep " " envVars}; do
+            echo "export $var" >> "$file"
+          done
+
           echo "exec ${icelock} ${icelockArgs} -- "${package}/bin/$base" ${builtins.concatStringsSep " " appFlags} \$@" >> "$file"
 
           chmod +x "$file"
@@ -102,6 +110,11 @@ in
           rm "$path"
 
           echo "#!${lib.getExe pkgs.bashNonInteractive}" > "$path"
+
+          for var in ${builtins.concatStringsSep " " envVars}; do
+            echo "export $var" >> "$path"
+          done
+
           echo "exec ${icelock} ${icelockArgs} -- "${package}$file" ${builtins.concatStringsSep " " appFlags} \$@" >> "$path"
 
           chmod +x "$path"
