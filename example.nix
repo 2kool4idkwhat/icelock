@@ -4,14 +4,12 @@
   simple = makeIcelockWrapper {
     package = pkgs.eza;
 
-    rx = [ "/nix/store" ];
     ro = [ "/" ];
   };
 
   limited-network = makeIcelockWrapper {
     package = pkgs.curl;
 
-    rx = [ "/nix/store" ];
     ro = [ "/etc" ];
 
     connectTcp = [ 443 ];

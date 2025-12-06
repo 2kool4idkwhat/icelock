@@ -25,7 +25,7 @@ in
 
       restrictFs ? true,
       ro ? [ ],
-      rx ? [ ],
+      rx ? [ "/nix/store" ],
       rw ? [ ],
 
       restrictNet ? true,
