@@ -21,6 +21,7 @@ in
     {
       package,
       extraBinPaths ? [ ],
+      appFlags ? [ ],
 
       restrictFs ? true,
       ro ? [ ],
@@ -89,7 +90,7 @@ in
           rm "$file"
 
           echo "#!${lib.getExe pkgs.bashNonInteractive}" > "$file"
-          echo "exec ${icelock} ${icelockArgs} -- "${package}/bin/$base" \$@" >> "$file"
+          echo "exec ${icelock} ${icelockArgs} -- "${package}/bin/$base" ${builtins.concatStringsSep " " appFlags} \$@" >> "$file"
 
           chmod +x "$file"
         done
@@ -101,7 +102,7 @@ in
           rm "$path"
 
           echo "#!${lib.getExe pkgs.bashNonInteractive}" > "$path"
-          echo "exec ${icelock} ${icelockArgs} -- "${package}$file" \$@" >> "$path"
+          echo "exec ${icelock} ${icelockArgs} -- "${package}$file" ${builtins.concatStringsSep " " appFlags} \$@" >> "$path"
 
           chmod +x "$path"
         done
