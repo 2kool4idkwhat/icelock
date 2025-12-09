@@ -63,7 +63,14 @@ in
           (boolOpt "--unrestricted-fs" (!restrictFs))
           (listOpt "--ro" ro)
           (listOpt "--rx" rx)
-          (listOpt "--rw" rw)
+          (listOpt "--rw" (
+            rw
+            ++ [
+              "/dev/null"
+              "/dev/zero"
+              "/dev/full"
+            ]
+          ))
 
           (boolOpt "--unrestricted-net" (!restrictNet))
           (portListOpt "--bind-tcp" bindTcp)
