@@ -50,13 +50,13 @@ func setupLandlock(cfg *config) {
 	}
 
 	if cfg.NetRestricted {
-		for _, port := range cfg.NetBindTcp {
+		for _, port := range cfg.NetBindTCP {
 			log.Debug("Allowing binding to TCP port %v", port)
 
 			netRule := landlock.BindTCP(uint16(port))
 			rules = append(rules, netRule)
 		}
-		for _, port := range cfg.NetConnectTcp {
+		for _, port := range cfg.NetConnectTCP {
 			log.Debug("Allowing connecting to TCP port %v", port)
 
 			netRule := landlock.ConnectTCP(uint16(port))

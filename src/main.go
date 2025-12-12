@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "25.12.2"
+const version = "25.12.3"
 
 type config struct {
 	LogLevel string
@@ -23,8 +23,8 @@ type config struct {
 	FsRW         []string
 
 	NetRestricted bool
-	NetBindTcp    []int
-	NetConnectTcp []int
+	NetBindTCP    []int
+	NetConnectTCP []int
 
 	IpcScoped bool
 
@@ -146,8 +146,8 @@ func main() {
 				FsRW:         cmd.StringSlice("rw"),
 
 				NetRestricted: !cmd.Bool("unrestricted-net"),
-				NetBindTcp:    cmd.IntSlice("bind-tcp"),
-				NetConnectTcp: cmd.IntSlice("connect-tcp"),
+				NetBindTCP:    cmd.IntSlice("bind-tcp"),
+				NetConnectTCP: cmd.IntSlice("connect-tcp"),
 
 				IpcScoped: !cmd.Bool("unscoped-ipc"),
 
