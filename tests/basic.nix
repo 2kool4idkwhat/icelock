@@ -2,6 +2,9 @@
 
 let
 
+  succeed = args: ''machine.succeed("icelock ${args}")'';
+  fail = args: ''machine.fail("icelock ${args}")'';
+
   tcpBindTest =
     type: icelockArg:
     # SIGINT so that python exits with 0
@@ -25,20 +28,20 @@ pkgs.testers.runNixOSTest {
     # sanity check
     machine.succeed("ls /run")
 
-    machine.fail("icelock -- ls /run")
-    machine.fail("icelock --rx /nix/store -- ls /run")
-    machine.succeed("icelock --rx /nix/store --ro /run -- ls /run")
+    ${fail "-- ls /run"}
+    ${fail "--rx /nix/store -- ls /run"}
+    ${succeed "--rx /nix/store --ro /run -- ls /run"}
 
-    machine.succeed("icelock --rx / -- ls /run")
-    machine.fail("icelock --ro / -- ls /run")
-    machine.fail("icelock --rw / -- ls /run")
+    ${succeed "--rx / -- ls /run"}
+    ${fail "--ro / -- ls /run"}
+    ${fail "--rw / -- ls /run"}
 
-    machine.succeed("icelock --unrestricted-fs -- ls /run")
+    ${succeed "--unrestricted-fs -- ls /run"}
 
-    machine.fail("icelock --rx /nix/store -- touch /tmp/something")
-    machine.fail("icelock --rx /nix/store --ro /tmp -- touch /tmp/something")
-    machine.fail("icelock --rx /nix/store --rx /tmp -- touch /tmp/something")
-    machine.succeed("icelock --rx /nix/store --rw /tmp -- touch /tmp/something")
+    ${fail "--rx /nix/store -- touch /tmp/something"}
+    ${fail "--rx /nix/store --ro /tmp -- touch /tmp/something"}
+    ${fail "--rx /nix/store --rx /tmp -- touch /tmp/something"}
+    ${succeed "--rx /nix/store --rw /tmp -- touch /tmp/something"}
 
     machine.fail("${./signal-scoped.sh}")
     machine.succeed("${./signal-unscoped.sh}")
@@ -53,9 +56,9 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
-    machine.fail("icelock --unrestricted-fs -- busctl")
-    machine.succeed("icelock --unrestricted-fs --af unix -- busctl")
-    machine.fail("icelock --unrestricted-fs --af inet -- busctl")
-    machine.succeed("icelock --unrestricted-fs --no-seccomp -- busctl")
+    ${fail "--unrestricted-fs -- busctl"}
+    ${succeed "--unrestricted-fs --af unix -- busctl"}
+    ${fail "--unrestricted-fs --af inet -- busctl"}
+    ${succeed "--unrestricted-fs --no-seccomp -- busctl"}
   '';
 }
