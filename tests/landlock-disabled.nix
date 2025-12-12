@@ -5,7 +5,7 @@ pkgs.testers.runNixOSTest {
     { config, pkgs, ... }:
     {
       environment.systemPackages = [
-        (pkgs.callPackage ../src { })
+        (pkgs.callPackage ../package.nix { })
       ];
 
       security.lsm = lib.mkForce [

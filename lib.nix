@@ -5,7 +5,7 @@ let
   inherit (pkgs) lib;
   inherit (builtins) isBool isList;
 
-  icelockPkg = pkgs.callPackage ./src { };
+  icelockPkg = pkgs.callPackage ./package.nix { };
   icelock = lib.getExe icelockPkg;
 
   listOpt =

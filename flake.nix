@@ -23,7 +23,7 @@
           makeIcelockWrapper = self.outputs.lib.${system}.makeIcelockWrapper;
         in
         {
-          icelock = pkgs.callPackage ./src { };
+          icelock = pkgs.callPackage ./package.nix { };
           default = self.outputs.packages.${system}.icelock;
         }
         // (import ./example.nix { inherit pkgs makeIcelockWrapper; })

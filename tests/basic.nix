@@ -18,7 +18,7 @@ pkgs.testers.runNixOSTest {
     { config, pkgs, ... }:
     {
       environment.systemPackages = [
-        (pkgs.callPackage ../src { })
+        (pkgs.callPackage ../package.nix { })
       ];
     };
 
@@ -51,7 +51,7 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "fail" "--no-seccomp"}
     ${tcpBindTest "fail" "--bind-tcp 8000"}
     ${tcpBindTest "fail" "--af inet --connect-tcp 8000"}
-    
+
     ${tcpBindTest "succeed" "--af inet --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
