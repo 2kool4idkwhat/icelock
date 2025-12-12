@@ -206,7 +206,7 @@ func setupSeccomp(cfg *config) {
 			blockedAf = append(blockedAf, unix.AF_UNIX)
 		}
 
-		if !afInet {
+		if !afInet && cfg.NetRestricted {
 			blockedAf = append(blockedAf, unix.AF_INET, unix.AF_INET6)
 		}
 

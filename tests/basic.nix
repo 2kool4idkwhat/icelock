@@ -5,7 +5,7 @@ let
   tcpBindTest =
     type: icelockArg:
     # SIGINT so that python exits with 0
-    ''machine.${type}("timeout --signal=SIGINT --preserve-status 3s icelock --rx / --af inet ${icelockArg} -- ${lib.getExe pkgs.python3} -m http.server")'';
+    ''machine.${type}("timeout --signal=SIGINT --preserve-status 3s icelock --rx / ${icelockArg} -- ${lib.getExe pkgs.python3} -m http.server")'';
 
 in
 
@@ -44,8 +44,13 @@ pkgs.testers.runNixOSTest {
     machine.succeed("${./signal-unscoped.sh}")
 
     ${tcpBindTest "fail" ""}
-    ${tcpBindTest "succeed" "--bind-tcp 8000"}
-    ${tcpBindTest "fail" "--connect-tcp 8000"}
+    ${tcpBindTest "fail" "--af inet"}
+    ${tcpBindTest "fail" "--no-seccomp"}
+    ${tcpBindTest "fail" "--bind-tcp 8000"}
+    ${tcpBindTest "fail" "--af inet --connect-tcp 8000"}
+    
+    ${tcpBindTest "succeed" "--af inet --bind-tcp 8000"}
+    ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
     machine.fail("icelock --unrestricted-fs -- busctl")
