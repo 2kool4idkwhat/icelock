@@ -1,4 +1,5 @@
 {
+  lib,
   buildGoModule,
   installShellFiles,
   pkg-config,
@@ -9,7 +10,6 @@
 buildGoModule {
   name = "icelock";
   src = ./src;
-  meta.mainProgram = "icelock";
 
   vendorHash = "sha256-gRlxUIcBvkpdYUD7k1M/zsxtno6t/c3N7ly+cH9yi6s=";
 
@@ -29,4 +29,12 @@ buildGoModule {
       --fish <($out/bin/icelock completion fish) \
       --zsh <($out/bin/icelock completion zsh)
   '';
+
+  meta = {
+    description = "Tool for restricting programs with Landlock";
+    homepage = "https://github.com/2kool4idkwhat/icelock";
+    license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
+    mainProgram = "icelock";
+  };
 }
