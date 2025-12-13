@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "25.12.3"
+const version = "25.12.4"
 
 type config struct {
 	LogLevel string
@@ -42,6 +42,9 @@ func main() {
 		Usage:                 "tool for restricting programs with landlock",
 		Version:               version,
 		EnableShellCompletion: true,
+
+		// disable the help subcommand ($ icelock help) since it's unintuitive
+		HideHelpCommand: true,
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
