@@ -47,6 +47,10 @@ func setupLandlock(cfg *config) {
 		for _, path := range cfg.FsRW {
 			rules = append(rules, rwPath(path))
 		}
+
+		if len(cfg.FsRX) == 0 {
+			log.Error("Can't run the app, no executable paths were specified with the '--rx' flag")
+		}
 	}
 
 	if cfg.NetRestricted {
