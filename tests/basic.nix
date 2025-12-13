@@ -19,6 +19,8 @@ pkgs.testers.runNixOSTest {
     {
       environment.systemPackages = [
         (pkgs.callPackage ../package.nix { })
+
+        pkgs.keyutils
       ];
     };
 
@@ -28,24 +30,49 @@ pkgs.testers.runNixOSTest {
     # sanity check
     machine.succeed("ls /run")
 
-    ${fail "-- ls /run"}
-    ${fail "--rx /nix/store -- ls /run"}
-    ${succeed "--rx /nix/store --ro /run -- ls /run"}
+    ### FS - LIST DIR ###
+    ${fail "--rx /nix -- ls /run"}
+    ${fail "--rx /nix --ro /etc -- ls /run"}
 
-    ${succeed "--rx / -- ls /run"}
-    ${fail "--ro / -- ls /run"}
-    ${fail "--rw / -- ls /run"}
+    ${succeed "--rx /nix --ro /run -- ls /run"}
+    ${succeed "--rx /nix --rx /run -- ls /run"}
+    ${succeed "--rx /nix --rw /run -- ls /run"}
 
     ${succeed "--unrestricted-fs -- ls /run"}
 
-    ${fail "--rx /nix/store -- touch /tmp/something"}
-    ${fail "--rx /nix/store --ro /tmp -- touch /tmp/something"}
-    ${fail "--rx /nix/store --rx /tmp -- touch /tmp/something"}
-    ${succeed "--rx /nix/store --rw /tmp -- touch /tmp/something"}
+    ### FS - READ FILE ###
+    ${fail "--rx /nix -- cat /etc/machine-id"}
+    ${fail "--rx /nix --ro /etc/alsa -- cat /etc/machine-id"}
 
-    machine.fail("${./signal.sh}")
-    machine.succeed("${./signal.sh} unscoped")
+    ${succeed "--rx /nix --ro /etc -- cat /etc/machine-id"}
+    ${succeed "--rx /nix --ro /etc/machine-id -- cat /etc/machine-id"}
+    ${succeed "--unrestricted-fs -- cat /etc/machine-id"}
 
+    ### FS - MAKE DIRS ###
+    ${fail "--rx /nix -- mkdir /tmp/dir1"}
+    ${fail "--rx /nix --ro /tmp -- mkdir /tmp/dir2"}
+    ${fail "--rx /nix --rx /tmp -- mkdir /tmp/dir3"}
+
+    ${succeed "--rx /nix --rw /tmp -- mkdir /tmp/dir4"}
+    ${succeed "--unrestricted-fs -- mkdir /tmp/dir5"}
+
+    ### FS - MAKE FILES ###
+    ${fail "--rx /nix -- touch /tmp/file1"}
+    ${fail "--rx /nix --ro /tmp -- touch /tmp/file2"}
+    ${fail "--rx /nix --rx /tmp -- touch /tmp/file3"}
+
+    ${succeed "--rx /nix --rw /tmp -- touch /tmp/file4"}
+
+    ### FS - EXECUTE ###
+    ${fail "-- pwd"}
+    ${fail "--ro / -- pwd"}
+    ${fail "--rw / -- pwd"}
+    ${fail "--rx /etc -- pwd"}
+
+    ${succeed "--rx / -- pwd"}
+    ${succeed "--unrestricted-fs -- pwd"}
+
+    ### NET - TCP BIND ###
     ${tcpBindTest "fail" ""}
     ${tcpBindTest "fail" "--af inet"}
     ${tcpBindTest "fail" "--no-seccomp"}
@@ -56,9 +83,26 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
-    ${fail "--unrestricted-fs -- busctl"}
-    ${succeed "--unrestricted-fs --af unix -- busctl"}
-    ${fail "--unrestricted-fs --af inet -- busctl"}
-    ${succeed "--unrestricted-fs --no-seccomp -- busctl"}
+    ### IPC - SIGNALS ###
+    machine.fail("${./signal.sh}")
+    machine.succeed("${./signal.sh} unscoped")
+
+    ### SECCOMP - UNIX SOCKETS ###
+    ${fail "--rx /nix -- busctl"}
+    ${fail "--rx /nix --af inet -- busctl"}
+
+    ${succeed "--rx /nix --af unix -- busctl"}
+    ${succeed "--rx /nix --no-seccomp -- busctl"}
+
+    ### SECCOMP - KEYRING SYSCALLS ###
+
+    # sanity check
+    machine.succeed("keyctl list @us")
+
+    ${fail "--unrestricted-fs -- keyctl list @us"}
+    ${fail "--unrestricted-fs --syscalls chmod -- keyctl list @us"}
+
+    ${succeed "--unrestricted-fs --syscalls keyring -- keyctl list @us"}
+    ${succeed "--unrestricted-fs --no-seccomp -- keyctl list @us"}
   '';
 }
