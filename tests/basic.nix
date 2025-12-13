@@ -43,8 +43,8 @@ pkgs.testers.runNixOSTest {
     ${fail "--rx /nix/store --rx /tmp -- touch /tmp/something"}
     ${succeed "--rx /nix/store --rw /tmp -- touch /tmp/something"}
 
-    machine.fail("${./signal-scoped.sh}")
-    machine.succeed("${./signal-unscoped.sh}")
+    machine.fail("${./signal.sh}")
+    machine.succeed("${./signal.sh} unscoped")
 
     ${tcpBindTest "fail" ""}
     ${tcpBindTest "fail" "--af inet"}
