@@ -106,15 +106,26 @@ pkgs.testers.runNixOSTest {
     ${succeed "--unrestricted-fs --no-seccomp -- keyctl list @us"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
-    machine.succeed("mkdir -p /tmp/chmodtest")
+    machine.succeed("mkdir -p /tmp/chmod-test")
 
-    ${fail "--rx / -- chmod +r /tmp/chmodtest"}
-    ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmodtest"}
-    ${fail "--rx / --syscalls keyring -- chmod +r /tmp/chmodtest"}
+    ${fail "--rx / -- chmod +r /tmp/chmod-test"}
+    ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmod-test"}
+    ${fail "--rx / --syscalls keyring -- chmod +r /tmp/chmod-test"}
 
-    ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmodtest"}
-    ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmodtest"}
-    ${succeed "--unrestricted-fs -- chmod +r /tmp/chmodtest"}
+    ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmod-test"}
+    ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmod-test"}
+    ${succeed "--unrestricted-fs -- chmod +r /tmp/chmod-test"}
+
+    ### SECCOMP - CHOWN SYSCALLS ###
+    machine.succeed("mkdir -p /tmp/chown-test")
+
+    ${fail "--rx / -- chown root /tmp/chown-test"}
+    ${fail "--rx / --rw /tmp -- chown root /tmp/chown-test"}
+    ${fail "--rx / --syscalls keyring -- chown root /tmp/chown-test"}
+
+    ${succeed "--rx / --syscalls chown -- chown root /tmp/chown-test"}
+    ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
+    ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
 
     ### ARG PARSING ###
     ${succeed "--rx /nix --rx /etc --rx /run -- ls /etc /run"}
