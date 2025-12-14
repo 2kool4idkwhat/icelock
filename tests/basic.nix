@@ -104,5 +104,16 @@ pkgs.testers.runNixOSTest {
 
     ${succeed "--unrestricted-fs --syscalls keyring -- keyctl list @us"}
     ${succeed "--unrestricted-fs --no-seccomp -- keyctl list @us"}
+
+    ### SECCOMP - CHMOD SYSCALLS ###
+    machine.succeed("mkdir -p /tmp/chmodtest")
+
+    ${fail "--rx / -- chmod +r /tmp/chmodtest"}
+    ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmodtest"}
+    ${fail "--rx / --syscalls keyring -- chmod +r /tmp/chmodtest"}
+
+    ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmodtest"}
+    ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmodtest"}
+    ${succeed "--unrestricted-fs -- chmod +r /tmp/chmodtest"}
   '';
 }
