@@ -48,7 +48,7 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx /nix --ro /etc/machine-id -- cat /etc/machine-id"}
     ${succeed "--unrestricted-fs -- cat /etc/machine-id"}
 
-    ### FS - MAKE DIRS ###
+    ### FS - MAKE DIR ###
     ${fail "--rx /nix -- mkdir /tmp/dir1"}
     ${fail "--rx /nix --ro /tmp -- mkdir /tmp/dir2"}
     ${fail "--rx /nix --rx /tmp -- mkdir /tmp/dir3"}
@@ -56,12 +56,26 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx /nix --rw /tmp -- mkdir /tmp/dir4"}
     ${succeed "--unrestricted-fs -- mkdir /tmp/dir5"}
 
-    ### FS - MAKE FILES ###
+    ### FS - MAKE FILE ###
     ${fail "--rx /nix -- touch /tmp/file1"}
     ${fail "--rx /nix --ro /tmp -- touch /tmp/file2"}
     ${fail "--rx /nix --rx /tmp -- touch /tmp/file3"}
 
     ${succeed "--rx /nix --rw /tmp -- touch /tmp/file4"}
+
+    ### FS - WRITE FILE ###
+    machine.succeed("touch /tmp/write-test")
+
+    ${fail "--rx /nix -- bash -c 'echo 1 >> /tmp/write-test'"}
+    ${fail "--rx /nix --ro /tmp -- bash -c 'echo 2 >> /tmp/write-test'"}
+    ${fail "--rx / -- bash -c 'echo 3 >> /tmp/write-test'"}
+    ${fail "--rx /nix --rw /etc -- bash -c 'echo 4 >> /tmp/write-test'"}
+
+    ${succeed "--rx /nix --rw /tmp/write-test -- bash -c 'echo 5 >> /tmp/write-test'"}
+    ${succeed "--rx /nix --rw /tmp -- bash -c 'echo 6 >> /tmp/write-test'"}
+    ${succeed "--rx /nix --rw / -- bash -c 'echo 7 >> /tmp/write-test'"}
+
+    ${succeed "--unrestricted-fs -- bash -c 'echo 8 >> /tmp/write-test'"}
 
     ### FS - EXECUTE ###
     ${fail "-- pwd"}
