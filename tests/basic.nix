@@ -115,5 +115,13 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmodtest"}
     ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmodtest"}
     ${succeed "--unrestricted-fs -- chmod +r /tmp/chmodtest"}
+
+    ### ARG PARSING ###
+    ${succeed "--rx /nix --rx /etc --rx /run -- ls /etc /run"}
+
+    ${succeed "--rx /nix,/etc,/run -- ls /etc /run"}
+    ${succeed "--rx=/nix,/etc,/run -- ls /etc /run"}
+
+    ${succeed "--rx /nix,/etc --rx=/run -- ls /etc /run"}
   '';
 }
