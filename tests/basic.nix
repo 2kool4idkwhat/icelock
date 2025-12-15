@@ -78,6 +78,19 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / --rw /tmp -- rmdir /tmp/remove-dir-test1"}
     ${succeed "--unrestricted-fs -- rmdir /tmp/remove-dir-test2"}
 
+    ### FS - REMOVE FILE ###
+    machine.succeed("touch /tmp/remove-file-test1 /tmp/remove-file-test2")
+
+    ${fail "--rx /nix -- rm /tmp/remove-file-test1"}
+    ${fail "--rx / -- rm /tmp/remove-file-test1"}
+    ${fail "--rx / --ro /tmp -- rm /tmp/remove-file-test1"}
+    ${fail "--rx / --rw /etc -- rm /tmp/remove-file-test1"}
+
+    ${fail "--rx / --rw /tmp/remove-file-test1 -- rm /tmp/remove-file-test1"}
+
+    ${succeed "--rx / --rw /tmp -- rm /tmp/remove-file-test1"}
+    ${succeed "--unrestricted-fs -- rm /tmp/remove-file-test2"}
+
     ### FS - WRITE FILE ###
     machine.succeed("touch /tmp/write-test")
 
