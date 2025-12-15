@@ -63,6 +63,21 @@ pkgs.testers.runNixOSTest {
 
     ${succeed "--rx /nix --rw /tmp -- touch /tmp/file4"}
 
+    ### FS - REMOVE DIR ###
+    machine.succeed("mkdir -p /tmp/remove-dir-test1 /tmp/remove-dir-test2")
+
+    ${fail "--rx /nix -- rmdir /tmp/remove-dir-test1"}
+    ${fail "--rx / -- rmdir /tmp/remove-dir-test1"}
+    ${fail "--rx / --ro /tmp -- rmdir /tmp/remove-dir-test1"}
+    ${fail "--rx / --rw /etc -- rmdir /tmp/remove-dir-test1"}
+
+    # "fail" since according to kernel docs LANDLOCK_ACCESS_FS_REMOVE_DIR only allows
+    # deleting dirs below the target dir, not the target dir itself
+    ${fail "--rx / --rw /tmp/remove-dir-test1 -- rmdir /tmp/remove-dir-test1"}
+
+    ${succeed "--rx / --rw /tmp -- rmdir /tmp/remove-dir-test1"}
+    ${succeed "--unrestricted-fs -- rmdir /tmp/remove-dir-test2"}
+
     ### FS - WRITE FILE ###
     machine.succeed("touch /tmp/write-test")
 
