@@ -5,6 +5,9 @@ let
   succeed = args: ''machine.succeed("icelock ${args}")'';
   fail = args: ''machine.fail("icelock ${args}")'';
 
+  succeedCmd = command: ''machine.succeed("${command}")'';
+  failCmd = command: ''machine.fail("${command}")'';
+
   tcpBindTest =
     type: icelockArg:
     # SIGINT so that python exits with 0
@@ -137,15 +140,11 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx /nix --no-seccomp -- busctl"}
 
     ### SECCOMP - KEYRING SYSCALLS ###
+    ${failCmd "${./keyring.sh}"}
+    ${failCmd "${./keyring.sh} --syscalls chmod"}
 
-    # sanity check
-    machine.succeed("keyctl list @us")
-
-    ${fail "--unrestricted-fs -- keyctl list @us"}
-    ${fail "--unrestricted-fs --syscalls chmod -- keyctl list @us"}
-
-    ${succeed "--unrestricted-fs --syscalls keyring -- keyctl list @us"}
-    ${succeed "--unrestricted-fs --no-seccomp -- keyctl list @us"}
+    ${succeedCmd "${./keyring.sh} --syscalls keyring"}
+    ${succeedCmd "${./keyring.sh} --no-seccomp"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
     machine.succeed("mkdir -p /tmp/chmod-test")
