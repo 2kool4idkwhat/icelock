@@ -2,11 +2,11 @@
 
 let
 
-  succeed = args: ''machine.succeed("icelock ${args}")'';
-  fail = args: ''machine.fail("icelock ${args}")'';
-
   succeedCmd = command: ''machine.succeed("${command}")'';
   failCmd = command: ''machine.fail("${command}")'';
+
+  succeed = args: succeedCmd "icelock ${args}";
+  fail = args: failCmd "icelock ${args}";
 
   tcpBindTest =
     type: icelockArg:
@@ -31,7 +31,7 @@ pkgs.testers.runNixOSTest {
     machine.wait_for_unit("default.target")
 
     # sanity check
-    machine.succeed("ls /run")
+    ${succeedCmd "ls /run"}
 
     ### FS - LIST DIR ###
     ${fail "--rx /nix -- ls /run"}
@@ -67,7 +67,7 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx /nix --rw /tmp -- touch /tmp/file4"}
 
     ### FS - REMOVE DIR ###
-    machine.succeed("mkdir -p /tmp/remove-dir-test1 /tmp/remove-dir-test2")
+    ${succeedCmd "mkdir -p /tmp/remove-dir-test1 /tmp/remove-dir-test2"}
 
     ${fail "--rx /nix -- rmdir /tmp/remove-dir-test1"}
     ${fail "--rx / -- rmdir /tmp/remove-dir-test1"}
@@ -82,7 +82,7 @@ pkgs.testers.runNixOSTest {
     ${succeed "--unrestricted-fs -- rmdir /tmp/remove-dir-test2"}
 
     ### FS - REMOVE FILE ###
-    machine.succeed("touch /tmp/remove-file-test1 /tmp/remove-file-test2")
+    ${succeedCmd "touch /tmp/remove-file-test1 /tmp/remove-file-test2"}
 
     ${fail "--rx /nix -- rm /tmp/remove-file-test1"}
     ${fail "--rx / -- rm /tmp/remove-file-test1"}
@@ -95,7 +95,7 @@ pkgs.testers.runNixOSTest {
     ${succeed "--unrestricted-fs -- rm /tmp/remove-file-test2"}
 
     ### FS - WRITE FILE ###
-    machine.succeed("touch /tmp/write-test")
+    ${succeedCmd "touch /tmp/write-test"}
 
     ${fail "--rx /nix -- bash -c 'echo 1 >> /tmp/write-test'"}
     ${fail "--rx /nix --ro /tmp -- bash -c 'echo 2 >> /tmp/write-test'"}
@@ -129,8 +129,8 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
     ### IPC - SIGNALS ###
-    machine.fail("${./signal.sh}")
-    machine.succeed("${./signal.sh} unscoped")
+    ${failCmd "${./signal.sh}"}
+    ${succeedCmd "${./signal.sh} --unscoped-ipc"}
 
     ### SECCOMP - UNIX SOCKETS ###
     ${fail "--rx /nix -- busctl"}
@@ -147,7 +147,7 @@ pkgs.testers.runNixOSTest {
     ${succeedCmd "${./keyring.sh} --no-seccomp"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
-    machine.succeed("mkdir -p /tmp/chmod-test")
+    ${succeedCmd "mkdir -p /tmp/chmod-test"}
 
     ${fail "--rx / -- chmod +r /tmp/chmod-test"}
     ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmod-test"}
@@ -158,7 +158,7 @@ pkgs.testers.runNixOSTest {
     ${succeed "--unrestricted-fs -- chmod +r /tmp/chmod-test"}
 
     ### SECCOMP - CHOWN SYSCALLS ###
-    machine.succeed("mkdir -p /tmp/chown-test")
+    ${succeedCmd "mkdir -p /tmp/chown-test"}
 
     ${fail "--rx / -- chown root /tmp/chown-test"}
     ${fail "--rx / --rw /tmp -- chown root /tmp/chown-test"}
