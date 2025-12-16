@@ -19,9 +19,19 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 By default, everything that icelock can restrict is denied and needs to be explicitly allowed
 
-## Limitations
+## Limitations (non-exhaustive)
 
-TODO
+- if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as PipeWire, PulseAudio, etc)
+
+- execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
+
+- if filesystem access is restricted the app can't modify filesystem topology, which breaks bubblewrap and other sandboxing solutions that use mount namespaces
+
+- reading file metadata (`stat(2)`) isn't restricted
+
+- file locking (`flock(2)`) isn't restricted
+
+- changing file access/modify times (`utime(2)`) isn't restricted
 
 ## Related projects
 
