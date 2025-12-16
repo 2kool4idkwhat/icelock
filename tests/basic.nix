@@ -66,6 +66,15 @@ pkgs.testers.runNixOSTest {
 
     ${succeed "--rx /nix --rw /tmp -- touch /tmp/file4"}
 
+    ### FS - MAKE SYMLINK ###
+    ${fail "--rx /nix -- ln -s /aaa /tmp/symlink1"}
+    ${fail "--rx / -- ln -s /aaa /tmp/symlink1"}
+    ${fail "--rx / --ro /tmp -- ln -s /aaa /tmp/symlink1"}
+    ${fail "--rx / --rw /etc -- ln -s /aaa /tmp/symlink1"}
+
+    ${succeed "--rx / --rw /tmp -- ln -s /aaa /tmp/symlink1"}
+    ${succeed "--unrestricted-fs -- ln -s /aaa /tmp/symlink2"}
+
     ### FS - REMOVE DIR ###
     ${succeedCmd "mkdir -p /tmp/remove-dir-test1 /tmp/remove-dir-test2"}
 
