@@ -15,9 +15,7 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 ## Usage
 
-`icelock [options] -- <command> [command options]`
-
-By default, everything that icelock can restrict is denied and needs to be explicitly allowed
+See [USAGE.md](./USAGE.md)
 
 ## Limitations (non-exhaustive)
 
