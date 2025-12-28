@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"golang.org/x/sys/unix"
 	"os"
 	"os/exec"
 	"syscall"
@@ -34,6 +35,8 @@ type config struct {
 
 	Syscalls       []string
 	SocketFamilies []string
+
+	Mdwe bool
 }
 
 func main() {
@@ -125,6 +128,11 @@ func main() {
 				Usage:    `allowed socket address families ("netlink", "unix", "inet", "other")`,
 				Category: "Seccomp",
 			},
+
+			&cli.BoolFlag{
+				Name:  "mdwe",
+				Usage: "block W&X memory with the PR_MDWE_REFUSE_EXEC_GAIN prctl flag",
+			},
 		},
 
 		Action: func(ctx context.Context, cmd *cli.Command) error {
@@ -160,6 +168,8 @@ func main() {
 
 				Syscalls:       cmd.StringSlice("syscalls"),
 				SocketFamilies: cmd.StringSlice("af"),
+
+				Mdwe: cmd.Bool("mdwe"),
 			}
 
 			log.SetLevel(cfg.LogLevel)
@@ -181,6 +191,8 @@ func main() {
 
 			setupSeccomp(&cfg)
 
+			setupMdwe(&cfg)
+
 			log.Info("Executing: %s, args: %v", appExe, getAppArgs(args))
 			err = syscall.Exec(appExe, args, os.Environ())
 			if err != nil {
@@ -194,6 +206,17 @@ func main() {
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Error("%s", err.Error())
+	}
+}
+
+func setupMdwe(cfg *config) {
+	if cfg.Mdwe {
+		err := unix.Prctl(unix.PR_SET_MDWE, unix.PR_MDWE_REFUSE_EXEC_GAIN, 0, 0, 0)
+		if err != nil {
+			log.Error("Failed to set PR_MDWE_REFUSE_EXEC_GAIN: %v", err)
+			os.Exit(1)
+		}
+		log.Info("Set PR_MDWE_REFUSE_EXEC_GAIN")
 	}
 }
 

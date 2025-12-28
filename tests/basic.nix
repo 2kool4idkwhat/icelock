@@ -22,6 +22,7 @@ pkgs.testers.runNixOSTest {
     {
       environment.systemPackages = [
         (pkgs.callPackage ../package.nix { })
+        (pkgs.callPackage ./mdwe { })
 
         pkgs.keyutils
       ];
@@ -176,6 +177,10 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / --syscalls chown -- chown root /tmp/chown-test"}
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
     ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
+
+    ### MDWE ###
+    ${succeed "--unrestricted-fs -- mdwe-test"}
+    ${fail "--unrestricted-fs --mdwe -- mdwe-test"}
 
     ### ARG PARSING ###
     ${succeed "--rx /nix --rx /etc --rx /run -- ls /etc /run"}

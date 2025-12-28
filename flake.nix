@@ -25,6 +25,8 @@
         {
           icelock = pkgs.callPackage ./package.nix { };
           default = self.outputs.packages.${system}.icelock;
+
+          mdwe-test = pkgs.callPackage ./tests/mdwe { };
         }
         // (import ./example.nix { inherit pkgs makeIcelockWrapper; })
       );

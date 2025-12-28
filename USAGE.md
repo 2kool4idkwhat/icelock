@@ -4,7 +4,7 @@
 
 For flags that can take multiple args, you can separate the args with a comma (`,`). Eg. `--rx /usr --rx /bin` is the same as `--rx /usr,/bin`
 
-By default, everything that icelock can restrict is denied and needs to be explicitly allowed
+By default everything that icelock can restrict is denied and needs to be explicitly allowed, except for MDWE
 
 ## Filesystem
 
@@ -49,6 +49,12 @@ TIOCSTI and TIOCLINUX are also blocked since there's no legitimate reason to use
 By default, if seccomp blocks something then the syscall will return `EPERM` or `EAFNOSUPPORT`. If you use `--seccomp-kill`, the app process will instead be terminated
 
 You can disable seccomp with `--no-seccomp`. WARNING: This allows escaping the sandbox via D-bus since unix socket restrictions are currently implemented with seccomp
+
+## MDWE (Memory-Deny-Write-Execute)
+
+You can use `--mdwe` to set the `PR_MDWE_REFUSE_EXEC_GAIN` prctl flag to block memory mappings that are both writable and executable
+
+This is the only thing that's not restricted by default because it doesn't provide any isolation, it's only a hardening measure and is likely to cause breakage (mainly with JITs)
 
 ## Debugging
 

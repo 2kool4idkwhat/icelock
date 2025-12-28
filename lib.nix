@@ -9,7 +9,7 @@ let
   icelock = lib.getExe icelockPkg;
 
   listOpt =
-    flag: list: if list == [ ] then [ ] else "${flag} '${builtins.concatStringsSep "," list}'";
+    flag: list: if list == [ ] then [ ] else "${flag}='${builtins.concatStringsSep "," list}'";
 
   portListOpt = flag: list: listOpt flag (map builtins.toString list);
 
@@ -39,6 +39,8 @@ in
       seccompKill ? false,
       socketFamilies ? [ ],
       syscalls ? [ ],
+
+      mdwe ? false,
     }:
     assert isBool restrictFs;
     assert isList ro;
@@ -54,6 +56,8 @@ in
     assert isBool seccompEnable;
     assert isList socketFamilies;
     assert isList syscalls;
+
+    assert isBool mdwe;
     let
       envVars = lib.mapAttrsToList (name: value: ''${name}='"${value}"' '') env;
 
@@ -63,14 +67,7 @@ in
           (boolOpt "--unrestricted-fs" (!restrictFs))
           (listOpt "--ro" ro)
           (listOpt "--rx" rx)
-          (listOpt "--rw" (
-            rw
-            ++ [
-              "/dev/null"
-              "/dev/zero"
-              "/dev/full"
-            ]
-          ))
+          (listOpt "--rw" rw)
 
           (boolOpt "--unrestricted-net" (!restrictNet))
           (portListOpt "--bind-tcp" bindTcp)
@@ -82,6 +79,8 @@ in
           (boolOpt "--seccomp-kill" seccompKill)
           (listOpt "--af" socketFamilies)
           (listOpt "--syscalls" syscalls)
+
+          (boolOpt "--mdwe" mdwe)
         ]
       );
     in

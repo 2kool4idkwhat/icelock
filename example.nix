@@ -15,6 +15,8 @@
     connectTcp = [ 443 ];
 
     socketFamilies = [ "inet" ];
+
+    mdwe = true;
   };
 
   gnome-calculator = makeIcelockWrapper {
