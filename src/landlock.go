@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	// The set of access rights that only apply to files
-	accessFile landlock.AccessFSSet = llsys.AccessFSExecute | llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSReadFile
+	// The set of access rights that apply to files
+	accessFile landlock.AccessFSSet = llsys.AccessFSExecute | llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSReadFile | llsys.AccessFSIoctlDev
 
 	// The set of access rights associated with read access
 	accessFSRead landlock.AccessFSSet = llsys.AccessFSReadFile | llsys.AccessFSReadDir
