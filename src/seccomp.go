@@ -132,6 +132,7 @@ func setupSeccomp(cfg *config) {
 				// these *could* be used by unprivileged processes, but most distros
 				// disable that
 				"bpf",
+				"perf_event_open",
 				"syslog", // dmesg
 
 				// misc
