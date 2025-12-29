@@ -11,7 +11,7 @@ buildGoModule {
   name = "icelock";
   src = ./src;
 
-  vendorHash = "sha256-gRlxUIcBvkpdYUD7k1M/zsxtno6t/c3N7ly+cH9yi6s=";
+  vendorHash = "sha256-tNbMH3vAi5WHXV3Qa+UE/lgEQmEVIp2ss6WeMIyYs5c=";
 
   nativeBuildInputs = [
     installShellFiles
