@@ -127,6 +127,20 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / -- pwd"}
     ${succeed "--unrestricted-fs -- pwd"}
 
+    ${fail "--ro / --rx $(which pwd) -- pwd"}
+    ${fail "--ro / --rx ${pkgs.glibc} -- pwd"}
+    ${succeed "--ro / --rx $(which pwd) --rx ${pkgs.glibc} -- pwd"}
+
+    ### FS - INVALID PATHS ###
+    # icelock should ignore specified paths that don't exist
+    ${succeed "--rx /nix --rx /aaa -- pwd"}
+    ${succeed "--rx /nix --rx aaa -- pwd"}
+    ${succeed "--rx /nix --rx 'with some spaces' -- pwd"}
+    ${succeed "--rx /nix --rx 🐱🐱🐱 -- pwd"}
+
+    # 👨‍🚒 is actually 3 unicode chars (U+1F468, U+200D, U+1F692)
+    ${succeed "--rx /nix --rx 👨‍🚒👨‍🚒👨‍🚒 -- pwd"}
+
     ### NET - TCP BIND ###
     ${tcpBindTest "fail" ""}
     ${tcpBindTest "fail" "--af inet"}
