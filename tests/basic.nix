@@ -192,6 +192,19 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
     ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
 
+    ### NAMESPACES ###
+    ${fail "--rx / -- unshare --user --net echo aaa"}
+    ${succeed "--rx / --userns -- unshare --user --net echo aaa"}
+    ${succeed "--rx / --no-seccomp -- unshare --user --net echo aaa"}
+
+    # we aren't supposed to block creating other types of namespaces (these vm tests run
+    # as root inside the vm, so we have CAP_SYS_ADMIN and thus should be able to create them)
+    ${succeed "--rx / -- unshare --net echo aaa"}
+
+    # landlock implicitly blocks modifying fs topology if fs access rights are handled
+    ${fail "--rx / --rw / -- unshare --mount echo aaa"}
+    ${succeed "--unrestricted-fs -- unshare --mount echo aaa"}
+
     ### MDWE ###
     ${succeed "--unrestricted-fs -- mdwe-test"}
     ${fail "--unrestricted-fs --mdwe -- mdwe-test"}

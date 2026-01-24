@@ -20,12 +20,14 @@ type seccompRule struct {
 
 var (
 	actionEperm        = seccomp.ActErrno.SetReturnCode(int16(unix.EPERM))
+	actionEnosys       = seccomp.ActErrno.SetReturnCode(int16(unix.ENOSYS))
 	actionEafnosupport = seccomp.ActErrno.SetReturnCode(int16(unix.EAFNOSUPPORT))
 )
 
 func setupSeccomp(cfg *config) {
 	if cfg.SeccompKillBlocked {
 		actionEperm = seccomp.ActKillProcess
+		actionEnosys = seccomp.ActKillProcess
 		actionEafnosupport = seccomp.ActKillProcess
 	}
 
@@ -36,7 +38,34 @@ func setupSeccomp(cfg *config) {
 			os.Exit(1)
 		}
 
-		blockedSyscalls := []string{}
+		blockedSyscallsEperm := []string{}
+		blockedSyscallsEnosys := []string{}
+
+		rules := []seccompRule{
+			// modern distros should disable TIOCSTI, but we block it in case they don't.
+			// See https://wiki.gnoack.org/TiocstiTioclinuxSecurityProblems
+			//
+			// NOTE: if TIOCSTI is blocked by the sysctl, the error will be EIO
+			{
+				Action:   actionEperm,
+				Syscall:  unix.SYS_IOCTL,
+				Arg:      1,
+				Op:       seccomp.CompareMaskedEqual,
+				OpValue1: 0xFFFFFFFF,
+				OpValue2: unix.TIOCSTI,
+			},
+
+			// TIOCLINUX needs CAP_SYS_ADMIN, but we block it anyway as there's no
+			// legitimate reason to use it
+			{
+				Action:   actionEperm,
+				Syscall:  unix.SYS_IOCTL,
+				Arg:      1,
+				Op:       seccomp.CompareMaskedEqual,
+				OpValue1: 0xFFFFFFFF,
+				OpValue2: unix.TIOCLINUX,
+			},
+		}
 
 		var sysKeyring, sysChmod, sysChown, sysXattr, sysPrivileged bool
 
@@ -65,7 +94,7 @@ func setupSeccomp(cfg *config) {
 		// blocking kernel keyring access would have prevented CVE-2024-42318 (landlock bypass),
 		// and most things don't need it anyway
 		if !sysKeyring {
-			blockedSyscalls = append(blockedSyscalls,
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
 				"add_key",
 				"keyctl",
 				"request_key",
@@ -75,7 +104,7 @@ func setupSeccomp(cfg *config) {
 		// landlock can't restrict chmod as of ABI v7
 		// see https://github.com/landlock-lsm/linux/issues/11
 		if !sysChmod && cfg.FsRestricted {
-			blockedSyscalls = append(blockedSyscalls,
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
 				"chmod",
 				"fchmod",
 				"fchmodat",
@@ -85,7 +114,7 @@ func setupSeccomp(cfg *config) {
 
 		// landlock can't restrict chown as of ABI v7
 		if !sysChown && cfg.FsRestricted {
-			blockedSyscalls = append(blockedSyscalls,
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
 				"chown",
 				"chown32",
 				"fchown",
@@ -98,7 +127,7 @@ func setupSeccomp(cfg *config) {
 
 		// landlock can't restrict xattrs as of ABI v7, so block changing them (but not reading them)
 		if !sysXattr && cfg.FsRestricted {
-			blockedSyscalls = append(blockedSyscalls,
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
 				"setxattr",
 				"setxattrat",
 				"lsetxattr",
@@ -114,7 +143,7 @@ func setupSeccomp(cfg *config) {
 		// block some syscalls that unprivileged processes shouldn't be able to use anyway
 		// to reduce the exposed kernel surface
 		if !sysPrivileged {
-			blockedSyscalls = append(blockedSyscalls,
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
 				// @module systemd group
 				"delete_module",
 				"finit_module",
@@ -142,39 +171,47 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
-		for _, syscall := range blockedSyscalls {
+		if !cfg.UserNamespaces {
+			rules = append(rules,
+				// TODO: test on arm64 (since apparently the clone() syscall args order is
+				//  different there)
+				seccompRule{
+					Action:   actionEperm,
+					Syscall:  unix.SYS_CLONE,
+					Arg:      0,
+					Op:       seccomp.CompareMaskedEqual,
+					OpValue1: unix.CLONE_NEWUSER,
+					OpValue2: unix.CLONE_NEWUSER,
+				},
+
+				seccompRule{
+					Action:   actionEperm,
+					Syscall:  unix.SYS_UNSHARE,
+					Arg:      0,
+					Op:       seccomp.CompareMaskedEqual,
+					OpValue1: unix.CLONE_NEWUSER,
+					OpValue2: unix.CLONE_NEWUSER,
+				},
+			)
+
+			// seccomp can't look into clone3() args, so we block it with ENOSYS so that the app
+			// falls back to clone(). Flatpak also does this
+			blockedSyscallsEnosys = append(blockedSyscallsEnosys, "clone3")
+		}
+
+		for _, syscall := range blockedSyscallsEperm {
 			err := filter.AddRule(getSyscall(syscall), actionEperm)
 			if err != nil {
 				panic(err)
 			}
 		}
-		log.Debug("Blocked syscalls: %v", blockedSyscalls)
-
-		rules := []seccompRule{
-			// modern distros should disable TIOCSTI, but we block it in case they don't.
-			// See https://wiki.gnoack.org/TiocstiTioclinuxSecurityProblems
-			//
-			// NOTE: if TIOCSTI is blocked by the sysctl, the error will be EIO
-			{
-				Action:   actionEperm,
-				Syscall:  unix.SYS_IOCTL,
-				Arg:      1,
-				Op:       seccomp.CompareMaskedEqual,
-				OpValue1: 0xFFFFFFFF,
-				OpValue2: unix.TIOCSTI,
-			},
-
-			// TIOCLINUX needs CAP_SYS_ADMIN, but we block it anyway as there's no
-			// legitimate reason to use it
-			{
-				Action:   actionEperm,
-				Syscall:  unix.SYS_IOCTL,
-				Arg:      1,
-				Op:       seccomp.CompareMaskedEqual,
-				OpValue1: 0xFFFFFFFF,
-				OpValue2: unix.TIOCLINUX,
-			},
+		for _, syscall := range blockedSyscallsEnosys {
+			err := filter.AddRule(getSyscall(syscall), actionEnosys)
+			if err != nil {
+				panic(err)
+			}
 		}
+		log.Debug("Blocked syscalls: %v (EPERM), %v (ENOSYS)", blockedSyscallsEperm, blockedSyscallsEnosys)
 
 		var afNetlink, afUnix, afInet, afOther bool
 

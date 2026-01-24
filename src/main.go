@@ -36,6 +36,8 @@ type config struct {
 	Syscalls       []string
 	SocketFamilies []string
 
+	UserNamespaces bool
+
 	Mdwe bool
 }
 
@@ -130,6 +132,11 @@ func main() {
 			},
 
 			&cli.BoolFlag{
+				Name:  "userns",
+				Usage: "allow creating user namespaces",
+			},
+
+			&cli.BoolFlag{
 				Name:  "mdwe",
 				Usage: "block W&X memory with the PR_MDWE_REFUSE_EXEC_GAIN prctl flag",
 			},
@@ -168,6 +175,8 @@ func main() {
 
 				Syscalls:       cmd.StringSlice("syscalls"),
 				SocketFamilies: cmd.StringSlice("af"),
+
+				UserNamespaces: cmd.Bool("userns"),
 
 				Mdwe: cmd.Bool("mdwe"),
 			}

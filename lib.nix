@@ -40,6 +40,8 @@ in
       socketFamilies ? [ ],
       syscalls ? [ ],
 
+      userNamespaces ? false,
+
       mdwe ? false,
     }:
     assert isBool restrictFs;
@@ -56,6 +58,8 @@ in
     assert isBool seccompEnable;
     assert isList socketFamilies;
     assert isList syscalls;
+
+    assert isBool userNamespaces;
 
     assert isBool mdwe;
     let
@@ -79,6 +83,8 @@ in
           (boolOpt "--seccomp-kill" seccompKill)
           (listOpt "--af" socketFamilies)
           (listOpt "--syscalls" syscalls)
+
+          (boolOpt "--userns" userNamespaces)
 
           (boolOpt "--mdwe" mdwe)
         ]
