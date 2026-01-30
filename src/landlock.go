@@ -21,6 +21,15 @@ const (
 
 	// The set of access rights associated with read/write access
 	accessFSReadWrite landlock.AccessFSSet = accessFSRead | accessFSWrite
+
+	// The set of filesystem access rights
+	accessFSAll landlock.AccessFSSet = accessFSReadWrite | llsys.AccessFSExecute
+
+	// The set of network access rights
+	accessNetAll landlock.AccessNetSet = llsys.AccessNetBindTCP | llsys.AccessNetConnectTCP
+
+	// The set of scoped access rights
+	accessScopedAll landlock.ScopedSet = llsys.ScopeSignal | llsys.ScopeAbstractUnixSocket
 )
 
 var home string
@@ -37,7 +46,13 @@ func init() {
 func setupLandlock(cfg *config) {
 	var rules []landlock.Rule
 
+	var handledAccessFs landlock.AccessFSSet
+	var handledAccessNet landlock.AccessNetSet
+	var scopedAccess landlock.ScopedSet
+
 	if cfg.FsRestricted {
+		handledAccessFs = accessFSAll
+
 		for _, path := range cfg.FsRO {
 			rules = append(rules, roPath(path))
 		}
@@ -54,6 +69,8 @@ func setupLandlock(cfg *config) {
 	}
 
 	if cfg.NetRestricted {
+		handledAccessNet = accessNetAll
+
 		for _, port := range cfg.NetBindTCP {
 			log.Debug("Allowing binding to TCP port %v", port)
 
@@ -69,37 +86,26 @@ func setupLandlock(cfg *config) {
 
 	}
 
-	switch {
-	case cfg.FsRestricted && cfg.NetRestricted:
-		err := landlock.V5.Restrict(rules...)
-		if err != nil {
-			log.Error("Failed to apply landlock restrictions (filesystem + network): %v", err)
-			os.Exit(1)
-		}
-
-		log.Info("Applied landlock restrictions (filesystem + network)")
-
-	case cfg.FsRestricted && !cfg.NetRestricted:
-		err := landlock.V5.RestrictPaths(rules...)
-		if err != nil {
-			log.Error("Failed to apply landlock filesystem restrictions: %v", err)
-			os.Exit(1)
-		}
-
-		log.Info("Applied landlock filesystem restrictions")
-
-	case !cfg.FsRestricted && cfg.NetRestricted:
-		err := landlock.V5.RestrictNet(rules...)
-		if err != nil {
-			log.Error("Failed to apply landlock network restrictions: %v", err)
-			os.Exit(1)
-		}
-
-		log.Info("Applied landlock network restrictions")
-
-	default:
+	if cfg.IpcScoped {
+		scopedAccess = accessScopedAll
 	}
 
+	llConfig, err := landlock.NewConfig(handledAccessFs, handledAccessNet, scopedAccess)
+	if err != nil {
+		log.Error("Failed to create landlock config: %v", err)
+		os.Exit(1)
+	}
+	// due to a bug in go-landlock this will report incorrect handled filesystem
+	// access rights if all network access rights are handled
+	// TODO: open a PR with a fix
+	log.Info("Landlock config: %s", llConfig.String())
+
+	err = llConfig.Restrict(rules...)
+	if err != nil {
+		log.Error("Failed to apply landlock restrictions: %v", err)
+		os.Exit(1)
+	}
+	log.Info("Applied landlock restrictions")
 }
 
 func isDir(path string) bool {
@@ -157,17 +163,4 @@ func rwPath(path string) landlock.FSRule {
 	}
 
 	return landlock.PathAccess(accessRights, expandedPath).IgnoreIfMissing()
-}
-
-func setupLandlockIpc(cfg *config) {
-	if cfg.IpcScoped {
-
-		err := landlock.V6.RestrictScoped()
-		if err != nil {
-			log.Error("Failed to apply landlock IPC restrictions: %v", err)
-			os.Exit(1)
-		}
-
-		log.Info("Applied landlock IPC restrictions")
-	}
 }

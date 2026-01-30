@@ -5,8 +5,6 @@
 
 Icelock is a small CLI tool for restricting programs with [Landlock] (and seccomp). You can use icelock to run programs with reduced privileges
 
-Icelock currently requires Landlock v6 ABI to be supported by the kernel (v5 if you disable IPC scoping)
-
 ## Compiling
 
 Just run `nix build`

@@ -300,10 +300,10 @@ func setupSeccomp(cfg *config) {
 		} else {
 			err := filter.Load()
 			if err != nil {
-				log.Error("Failed to install seccomp filter: %v", err)
+				log.Error("Failed to apply seccomp filter: %v", err)
 				os.Exit(1)
 			}
-			log.Info("Installed seccomp filter")
+			log.Info("Applied seccomp filter")
 		}
 
 	}

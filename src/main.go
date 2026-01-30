@@ -193,11 +193,6 @@ func main() {
 
 			setupLandlock(&cfg)
 
-			// separate function for now so it's easy to remove it in case it breaks
-			// things, since we're getting ipc scoping support from the "scoped" branch
-			// of go-landlock
-			setupLandlockIpc(&cfg)
-
 			setupSeccomp(&cfg)
 
 			setupMdwe(&cfg)
