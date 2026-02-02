@@ -95,9 +95,10 @@ func setupLandlock(cfg *config) {
 		log.Error("Failed to create landlock config: %v", err)
 		os.Exit(1)
 	}
-	// due to a bug in go-landlock this will report incorrect handled filesystem
-	// access rights if all network access rights are handled
-	// TODO: open a PR with a fix
+	// due to a bug in go-landlock this will report incorrect info, so currently
+	// we use my fork that has a fix
+	// TODO: switch back to upstream go-landlock once https://github.com/landlock-lsm/go-landlock/pull/49
+	// is merged
 	log.Info("Landlock config: %s", llConfig.String())
 
 	err = llConfig.Restrict(rules...)

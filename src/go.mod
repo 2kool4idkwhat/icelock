@@ -10,3 +10,5 @@ require (
 )
 
 require kernel.org/pub/linux/libs/security/libcap/psx v1.2.77 // indirect
+
+replace github.com/landlock-lsm/go-landlock => github.com/2kool4idkwhat/go-landlock v0.0.0-20260130210229-7b25607c1968
