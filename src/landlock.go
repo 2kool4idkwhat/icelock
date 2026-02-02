@@ -27,9 +27,6 @@ const (
 
 	// The set of network access rights
 	accessNetAll landlock.AccessNetSet = llsys.AccessNetBindTCP | llsys.AccessNetConnectTCP
-
-	// The set of scoped access rights
-	accessScopedAll landlock.ScopedSet = llsys.ScopeSignal | llsys.ScopeAbstractUnixSocket
 )
 
 var home string
@@ -87,7 +84,13 @@ func setupLandlock(cfg *config) {
 	}
 
 	if cfg.IpcScoped {
-		scopedAccess = accessScopedAll
+		if cfg.SignalsScoped {
+			scopedAccess = scopedAccess | llsys.ScopeSignal
+		}
+
+		if cfg.AbstractUnixScoped {
+			scopedAccess = scopedAccess | llsys.ScopeAbstractUnixSocket
+		}
 	}
 
 	llConfig, err := landlock.NewConfig(handledAccessFs, handledAccessNet, scopedAccess)

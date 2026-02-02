@@ -27,7 +27,9 @@ type config struct {
 	NetBindTCP    []int
 	NetConnectTCP []int
 
-	IpcScoped bool
+	IpcScoped          bool
+	SignalsScoped      bool
+	AbstractUnixScoped bool
 
 	SeccompEnabled     bool
 	SeccompPrint       bool
@@ -100,8 +102,19 @@ func main() {
 			},
 
 			&cli.BoolFlag{
-				Name:  "unscoped-ipc",
-				Usage: "don't scope IPC (signals and abstract unix sockets)",
+				Name:     "unscoped-ipc",
+				Usage:    "don't scope IPC",
+				Category: "IPC",
+			},
+			&cli.BoolFlag{
+				Name:     "signals",
+				Usage:    "don't scope signals",
+				Category: "IPC",
+			},
+			&cli.BoolFlag{
+				Name:     "abstract-unix",
+				Usage:    "don't scope abstract unix sockets",
+				Category: "IPC",
 			},
 
 			&cli.BoolFlag{
@@ -167,7 +180,9 @@ func main() {
 				NetBindTCP:    cmd.IntSlice("bind-tcp"),
 				NetConnectTCP: cmd.IntSlice("connect-tcp"),
 
-				IpcScoped: !cmd.Bool("unscoped-ipc"),
+				IpcScoped:          !cmd.Bool("unscoped-ipc"),
+				SignalsScoped:      !cmd.Bool("signals"),
+				AbstractUnixScoped: !cmd.Bool("abstract-unix"),
 
 				SeccompEnabled:     !cmd.Bool("no-seccomp"),
 				SeccompPrint:       cmd.Bool("seccomp-print"),

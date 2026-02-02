@@ -30,15 +30,17 @@ If you need obscure socket families use `--af other`
 
 ## IPC
 
+If you don't want to scope IPC use `--unscoped-ipc`
+
 ### Signals
 
-To allow the app to send signals to processes outside the sandbox use `--unscoped-ipc`
+To allow the app to send signals to processes outside the sandbox use `--signals`
 
 ### Unix sockets
 
 To allow unix sockets use `--af unix`. WARNING: This allows escaping the sandbox via D-bus, since Landlock currently can't restrict pathname unix sockets
 
-If the app needs to connect to abstract unix sockets created outside the sandbox also use `--unscoped-ipc`
+If the app needs to connect to abstract unix sockets created outside the sandbox also use `--abstract-unix`
 
 ## User namespaces
 

@@ -34,6 +34,8 @@ in
       connectTcp ? [ ],
 
       scopeIpc ? true,
+      signals ? false,
+      abstractUnixSockets ? false,
 
       seccompEnable ? true,
       seccompKill ? false,
@@ -78,6 +80,8 @@ in
           (portListOpt "--connect-tcp" connectTcp)
 
           (boolOpt "--unscoped-ipc" (!scopeIpc))
+          (boolOpt "--signals" signals)
+          (boolOpt "--abstract-unix" abstractUnixSockets)
 
           (boolOpt "--no-seccomp" (!seccompEnable))
           (boolOpt "--seccomp-kill" seccompKill)

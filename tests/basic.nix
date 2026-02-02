@@ -154,6 +154,8 @@ pkgs.testers.runNixOSTest {
 
     ### IPC - SIGNALS ###
     ${failCmd "${./signal.sh}"}
+    ${failCmd "${./signal.sh} --abstract-unix"}
+    ${succeedCmd "${./signal.sh} --signals"}
     ${succeedCmd "${./signal.sh} --unscoped-ipc"}
 
     ### SECCOMP - UNIX SOCKETS ###
