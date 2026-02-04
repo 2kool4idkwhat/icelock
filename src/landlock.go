@@ -24,9 +24,6 @@ const (
 
 	// The set of filesystem access rights
 	accessFSAll landlock.AccessFSSet = accessFSReadWrite | llsys.AccessFSExecute
-
-	// The set of network access rights
-	accessNetAll landlock.AccessNetSet = llsys.AccessNetBindTCP | llsys.AccessNetConnectTCP
 )
 
 var home string
@@ -66,21 +63,27 @@ func setupLandlock(cfg *config) {
 	}
 
 	if cfg.NetRestricted {
-		handledAccessNet = accessNetAll
+		if !cfg.NetBindTCPAll {
+			handledAccessNet = handledAccessNet | llsys.AccessNetBindTCP
 
-		for _, port := range cfg.NetBindTCP {
-			log.Debug("Allowing binding to TCP port %v", port)
+			for _, port := range cfg.NetBindTCP {
+				log.Debug("Allowing binding to TCP port %v", port)
 
-			netRule := landlock.BindTCP(uint16(port))
-			rules = append(rules, netRule)
-		}
-		for _, port := range cfg.NetConnectTCP {
-			log.Debug("Allowing connecting to TCP port %v", port)
-
-			netRule := landlock.ConnectTCP(uint16(port))
-			rules = append(rules, netRule)
+				netRule := landlock.BindTCP(uint16(port))
+				rules = append(rules, netRule)
+			}
 		}
 
+		if !cfg.NetConnectTCPAll {
+			handledAccessNet = handledAccessNet | llsys.AccessNetConnectTCP
+
+			for _, port := range cfg.NetConnectTCP {
+				log.Debug("Allowing connecting to TCP port %v", port)
+
+				netRule := landlock.ConnectTCP(uint16(port))
+				rules = append(rules, netRule)
+			}
+		}
 	}
 
 	if cfg.IpcScoped {
@@ -98,10 +101,6 @@ func setupLandlock(cfg *config) {
 		log.Error("Failed to create landlock config: %v", err)
 		os.Exit(1)
 	}
-	// due to a bug in go-landlock this will report incorrect info, so currently
-	// we use my fork that has a fix
-	// TODO: switch back to upstream go-landlock once https://github.com/landlock-lsm/go-landlock/pull/49
-	// is merged
 	log.Info("Landlock config: %s", llConfig.String())
 
 	err = llConfig.Restrict(rules...)

@@ -147,8 +147,10 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "fail" "--no-seccomp"}
     ${tcpBindTest "fail" "--bind-tcp 8000"}
     ${tcpBindTest "fail" "--af inet --connect-tcp 8000"}
+    ${tcpBindTest "fail" "--af inet --connect-tcp-all"}
 
     ${tcpBindTest "succeed" "--af inet --bind-tcp 8000"}
+    ${tcpBindTest "succeed" "--af inet --bind-tcp-all"}
     ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 

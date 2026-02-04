@@ -24,7 +24,7 @@ If you don't want to restrict FS access use `--unrestricted-fs` (this also allow
 
 If you don't want to restrict network access use `--unrestricted-net` (this disables Landlock TCP restrictions and allows AF_INET/AF_INET6 sockets)
 
-For limited network access use `--af inet` to allow AF_INET/AF_INET6 sockets and `--bind-tcp`/`--connect-tcp` to allow binding/connecting to TCP ports. Landlock currently can't restrict binding/connecting to UDP ports
+For limited network access use `--af inet` to allow AF_INET/AF_INET6 sockets and `--bind-tcp`/`--bind-tcp-all`/`--connect-tcp`/`--connect-tcp-all` to allow binding/connecting to TCP ports. Landlock currently can't restrict binding/connecting to UDP ports
 
 If you need obscure socket families use `--af other`
 

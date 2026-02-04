@@ -1,7 +1,7 @@
-github.com/2kool4idkwhat/go-landlock v0.0.0-20260130210229-7b25607c1968 h1:dpMi62UtJT0OOFoqpN0uaDuO92FSPUhHwGey4vwALrg=
-github.com/2kool4idkwhat/go-landlock v0.0.0-20260130210229-7b25607c1968/go.mod h1:wuyctCG3l5w9rhHF8Hugrtpa3TCtCOgYU+np7V+mA0o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/landlock-lsm/go-landlock v0.0.0-20260203220723-9199ef6ceb31 h1:k/2NUtVf9omnkvYqXdksbOVm4YfZbIZ1rj04RYgDx90=
+github.com/landlock-lsm/go-landlock v0.0.0-20260203220723-9199ef6ceb31/go.mod h1:wuyctCG3l5w9rhHF8Hugrtpa3TCtCOgYU+np7V+mA0o=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/seccomp/libseccomp-golang v0.11.1 h1:wuk4ZjSx6kyQII4rj6G6fvVzRHQaSiPvccJazDagu4g=

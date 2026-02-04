@@ -31,7 +31,9 @@ in
 
       restrictNet ? true,
       bindTcp ? [ ],
+      bindTcpAll ? false,
       connectTcp ? [ ],
+      connectTcpAll ? false,
 
       scopeIpc ? true,
       signals ? false,
@@ -77,7 +79,9 @@ in
 
           (boolOpt "--unrestricted-net" (!restrictNet))
           (portListOpt "--bind-tcp" bindTcp)
+          (boolOpt "--bind-tcp-all" bindTcpAll)
           (portListOpt "--connect-tcp" connectTcp)
+          (boolOpt "--connect-tcp-all" connectTcpAll)
 
           (boolOpt "--unscoped-ipc" (!scopeIpc))
           (boolOpt "--signals" signals)

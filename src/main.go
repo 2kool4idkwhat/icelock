@@ -23,9 +23,11 @@ type config struct {
 	FsRX         []string
 	FsRW         []string
 
-	NetRestricted bool
-	NetBindTCP    []int
-	NetConnectTCP []int
+	NetRestricted    bool
+	NetBindTCP       []int
+	NetBindTCPAll    bool
+	NetConnectTCP    []int
+	NetConnectTCPAll bool
 
 	IpcScoped          bool
 	SignalsScoped      bool
@@ -95,9 +97,19 @@ func main() {
 				Usage:    "allow binding to this TCP port",
 				Category: "Network",
 			},
+			&cli.BoolFlag{
+				Name:     "bind-tcp-all",
+				Usage:    "allow binding to all TCP ports",
+				Category: "Network",
+			},
 			&cli.IntSliceFlag{
 				Name:     "connect-tcp",
 				Usage:    "allow connecting to this TCP port",
+				Category: "Network",
+			},
+			&cli.BoolFlag{
+				Name:     "connect-tcp-all",
+				Usage:    "allow connecting to all TCP ports",
 				Category: "Network",
 			},
 
@@ -176,9 +188,11 @@ func main() {
 				FsRX:         cmd.StringSlice("rx"),
 				FsRW:         cmd.StringSlice("rw"),
 
-				NetRestricted: !cmd.Bool("unrestricted-net"),
-				NetBindTCP:    cmd.IntSlice("bind-tcp"),
-				NetConnectTCP: cmd.IntSlice("connect-tcp"),
+				NetRestricted:    !cmd.Bool("unrestricted-net"),
+				NetBindTCP:       cmd.IntSlice("bind-tcp"),
+				NetBindTCPAll:    cmd.Bool("bind-tcp-all"),
+				NetConnectTCP:    cmd.IntSlice("connect-tcp"),
+				NetConnectTCPAll: cmd.Bool("connect-tcp-all"),
 
 				IpcScoped:          !cmd.Bool("unscoped-ipc"),
 				SignalsScoped:      !cmd.Bool("signals"),
