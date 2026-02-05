@@ -1,5 +1,6 @@
 [Landlock]: https://landlock.io/
 [Landrun]: https://github.com/Zouuup/landrun
+[Island]: https://github.com/landlock-lsm/island
 
 # icelock 🧊🔒
 
@@ -15,7 +16,7 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 See [USAGE.md](./USAGE.md)
 
-## Limitations (non-exhaustive)
+## Current limitations (non-exhaustive)
 
 - if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as PipeWire, PulseAudio, etc)
 
@@ -23,11 +24,15 @@ See [USAGE.md](./USAGE.md)
 
 - if filesystem access is restricted the app can't modify filesystem topology, which breaks bubblewrap and other sandboxing solutions that use mount namespaces
 
+- icelock doesn't stop the app from using too much resources (memory, CPU time, etc), so it won't protect you from eg. a fork bomb
+
 - reading file metadata (`stat(2)`) isn't restricted
 
 - file locking (`flock(2)`) isn't restricted
 
 - changing file access/modify times (`utime(2)`) isn't restricted
+
+- POSIX (and System V) message queues aren't restricted
 
 ## Related projects
 
@@ -48,3 +53,7 @@ See [USAGE.md](./USAGE.md)
 - icelock doesn't have a `--rwx` flag because you very rarely want to have a path that is both writable and executable, and if you do then you can just combine the `--rx` and `--rw` flags
 
 - in icelock the RX paths flag is called `--rx`, in landrun it's `--rox`
+
+### Island
+
+[Island] is the official Landlock sandboxing tool. Island is designed around workspaces, and as such is very different from icelock
