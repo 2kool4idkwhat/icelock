@@ -18,13 +18,15 @@ See [USAGE.md](./USAGE.md)
 
 ## Current limitations (non-exhaustive)
 
-- if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as PipeWire, PulseAudio, etc)
+- if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as Docker daemon)
 
 - execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
 
 - if filesystem access is restricted the app can't modify filesystem topology, which breaks bubblewrap and other sandboxing solutions that use mount namespaces
 
 - icelock doesn't stop the app from using too much resources (memory, CPU time, etc), so it won't protect you from eg. a fork bomb
+
+- [landlock TCP port restrictions don't apply to Multipath-TCP](https://github.com/landlock-lsm/linux/issues/54)
 
 - reading file metadata (`stat(2)`) isn't restricted
 
