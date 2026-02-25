@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "26.01.1"
+const version = "26.02.1"
 
 type config struct {
 	LogLevel string
