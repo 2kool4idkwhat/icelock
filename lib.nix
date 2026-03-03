@@ -45,6 +45,7 @@ in
       syscalls ? [ ],
 
       userNamespaces ? false,
+      ioUring ? false,
 
       mdwe ? false,
     }:
@@ -64,6 +65,7 @@ in
     assert isList syscalls;
 
     assert isBool userNamespaces;
+    assert isBool ioUring;
 
     assert isBool mdwe;
     let
@@ -93,6 +95,7 @@ in
           (listOpt "--syscalls" syscalls)
 
           (boolOpt "--userns" userNamespaces)
+          (boolOpt "--io-uring" ioUring)
 
           (boolOpt "--mdwe" mdwe)
         ]

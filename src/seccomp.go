@@ -199,6 +199,23 @@ func setupSeccomp(cfg *config) {
 			blockedSyscallsEnosys = append(blockedSyscallsEnosys, "clone3")
 		}
 
+		// io_uring can be used to create sockets without using the socket() syscall [1]
+		// which in theory allows escaping the sandbox via unix sockets
+		//
+		// io_uring has also caused vulnerabilities in the past [2]
+		//
+		// [1]: https://gist.github.com/rusty-snake/4fc70c99b9ec53292c90546b790f7429
+		// [2]: https://security.googleblog.com/2023/06/learnings-from-kctf-vrps-42-linux.html
+		//
+		// ENOSYS so that the app falls back to something else
+		if !cfg.IoUring {
+			blockedSyscallsEnosys = append(blockedSyscallsEnosys,
+				"io_uring_enter",
+				"io_uring_register",
+				"io_uring_setup",
+			)
+		}
+
 		for _, syscall := range blockedSyscallsEperm {
 			err := filter.AddRule(getSyscall(syscall), actionEperm)
 			if err != nil {

@@ -48,6 +48,10 @@ To allow the app to create user namespaces use `--userns`
 
 NOTE: as mentioned in the filesystem section, if filesystem access is restricted then the app effectively won't be able to use mount namespaces
 
+## io_uring
+
+To allow the app to use io_uring use `--io-uring`. WARNING: this may allow escaping the sandbox, since io_uring can be used to create unix sockets
+
 ## Seccomp
 
 In addition to syscall groups mentioned in previous sections, keyring syscalls and some privileged syscalls are also blocked. You can allow them with `--syscalls=keyring,privileged`

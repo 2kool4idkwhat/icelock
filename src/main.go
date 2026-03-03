@@ -41,6 +41,7 @@ type config struct {
 	SocketFamilies []string
 
 	UserNamespaces bool
+	IoUring        bool
 
 	Mdwe bool
 }
@@ -160,6 +161,10 @@ func main() {
 				Name:  "userns",
 				Usage: "allow creating user namespaces",
 			},
+			&cli.BoolFlag{
+				Name:  "io-uring",
+				Usage: "allow using io_uring",
+			},
 
 			&cli.BoolFlag{
 				Name:  "mdwe",
@@ -206,6 +211,7 @@ func main() {
 				SocketFamilies: cmd.StringSlice("af"),
 
 				UserNamespaces: cmd.Bool("userns"),
+				IoUring:        cmd.Bool("io-uring"),
 
 				Mdwe: cmd.Bool("mdwe"),
 			}
