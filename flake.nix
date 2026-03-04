@@ -27,6 +27,7 @@
           default = self.outputs.packages.${system}.icelock;
 
           mdwe-test = pkgs.callPackage ./tests/mdwe { };
+          socket-test = pkgs.callPackage ./tests/sockets { };
         }
         // (import ./example.nix { inherit pkgs makeIcelockWrapper; })
       );

@@ -23,6 +23,7 @@ pkgs.testers.runNixOSTest {
       environment.systemPackages = [
         (pkgs.callPackage ../package.nix { })
         (pkgs.callPackage ./mdwe { })
+        (pkgs.callPackage ./sockets { })
 
         pkgs.keyutils
       ];
@@ -159,6 +160,19 @@ pkgs.testers.runNixOSTest {
     ${failCmd "${./signal.sh} --abstract-unix"}
     ${succeedCmd "${./signal.sh} --signals"}
     ${succeedCmd "${./signal.sh} --unscoped-ipc"}
+
+    ### SECCOMP - SOCKETS ###
+    ${fail "--rx / -- socket-test --af unix"}
+    ${succeed "--rx / --af=unix -- socket-test --af unix"}
+
+    ${fail "--rx / -- socket-test --af inet"}
+    ${succeed "--rx / --af=inet -- socket-test --af inet"}
+
+    ${fail "--rx / -- socket-test --af inet6"}
+    ${succeed "--rx / --af=inet -- socket-test --af inet6"}
+
+    ${fail "--rx / -- socket-test --af vsock"}
+    ${succeed "--rx / --af=other -- socket-test --af vsock"}
 
     ### SECCOMP - UNIX SOCKETS ###
     ${fail "--rx /nix -- busctl"}
