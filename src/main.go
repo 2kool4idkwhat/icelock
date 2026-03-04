@@ -33,9 +33,8 @@ type config struct {
 	SignalsScoped      bool
 	AbstractUnixScoped bool
 
-	SeccompEnabled     bool
-	SeccompPrint       bool
-	SeccompKillBlocked bool
+	SeccompEnabled bool
+	SeccompPrint   bool
 
 	Syscalls       []string
 	SocketFamilies []string
@@ -140,11 +139,6 @@ func main() {
 				Usage:    "print a human-readable version of the filter and exit",
 				Category: "Seccomp",
 			},
-			&cli.BoolFlag{
-				Name:     "seccomp-kill",
-				Usage:    "if a syscall is blocked, kill the process",
-				Category: "Seccomp",
-			},
 
 			&cli.StringSliceFlag{
 				Name:     "syscalls",
@@ -203,9 +197,8 @@ func main() {
 				SignalsScoped:      !cmd.Bool("signals"),
 				AbstractUnixScoped: !cmd.Bool("abstract-unix"),
 
-				SeccompEnabled:     !cmd.Bool("no-seccomp"),
-				SeccompPrint:       cmd.Bool("seccomp-print"),
-				SeccompKillBlocked: cmd.Bool("seccomp-kill"),
+				SeccompEnabled: !cmd.Bool("no-seccomp"),
+				SeccompPrint:   cmd.Bool("seccomp-print"),
 
 				Syscalls:       cmd.StringSlice("syscalls"),
 				SocketFamilies: cmd.StringSlice("af"),

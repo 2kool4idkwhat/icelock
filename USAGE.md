@@ -58,8 +58,6 @@ In addition to syscall groups mentioned in previous sections, keyring syscalls a
 
 TIOCSTI and TIOCLINUX are also blocked since there's no legitimate reason to use them and they've been the source of many vulnerabilities
 
-By default, if seccomp blocks something then the syscall will return `EPERM` or `EAFNOSUPPORT`. If you use `--seccomp-kill`, the app process will instead be terminated
-
 You can disable seccomp with `--no-seccomp`. WARNING: This allows escaping the sandbox via D-bus since unix socket restrictions are currently implemented with seccomp
 
 ## MDWE (Memory-Deny-Write-Execute)

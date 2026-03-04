@@ -25,11 +25,6 @@ var (
 )
 
 func setupSeccomp(cfg *config) {
-	if cfg.SeccompKillBlocked {
-		actionEperm = seccomp.ActKillProcess
-		actionEnosys = seccomp.ActKillProcess
-		actionEafnosupport = seccomp.ActKillProcess
-	}
 
 	if cfg.SeccompEnabled {
 		filter, err := seccomp.NewFilter(seccomp.ActAllow)

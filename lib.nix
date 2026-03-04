@@ -40,7 +40,6 @@ in
       abstractUnixSockets ? false,
 
       seccompEnable ? true,
-      seccompKill ? false,
       socketFamilies ? [ ],
       syscalls ? [ ],
 
@@ -90,7 +89,6 @@ in
           (boolOpt "--abstract-unix" abstractUnixSockets)
 
           (boolOpt "--no-seccomp" (!seccompEnable))
-          (boolOpt "--seccomp-kill" seccompKill)
           (listOpt "--af" socketFamilies)
           (listOpt "--syscalls" syscalls)
 
