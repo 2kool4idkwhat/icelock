@@ -62,12 +62,15 @@ func setupSeccomp(cfg *config) {
 			},
 		}
 
-		var sysKeyring, sysChmod, sysChown, sysXattr, sysPrivileged bool
+		var sysKeyring, sysMq, sysChmod, sysChown, sysXattr, sysPrivileged bool
 
 		for _, group := range cfg.Syscalls {
 			switch group {
 			case "keyring":
 				sysKeyring = true
+
+			case "mq":
+				sysMq = true
 
 			case "chmod":
 				sysChmod = true
@@ -93,6 +96,28 @@ func setupSeccomp(cfg *config) {
 				"add_key",
 				"keyctl",
 				"request_key",
+			)
+		}
+
+		// block message queues since that's ipc which landlock can't (fully) restrict yet,
+		// and they're very rarely used anyway
+		// see https://github.com/landlock-lsm/linux/issues/29
+		// and https://github.com/landlock-lsm/linux/issues/30
+		if !sysMq {
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
+				// posix
+				"mq_getsetattr",
+				"mq_notify",
+				"mq_open",
+				"mq_timedreceive",
+				"mq_timedsend",
+				"mq_unlink",
+
+				// system v
+				"msgget",
+				"msgsnd",
+				"msgrcv",
+				"msgctl",
 			)
 		}
 

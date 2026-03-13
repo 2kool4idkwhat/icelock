@@ -42,6 +42,10 @@ To allow unix sockets use `--af unix`. WARNING: This allows escaping the sandbox
 
 If the app needs to connect to abstract unix sockets created outside the sandbox also use `--abstract-unix`
 
+### Message queues
+
+To allow POSIX and System V message queues use `--syscalls=mq`
+
 ## User namespaces
 
 To allow the app to create user namespaces use `--userns`

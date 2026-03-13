@@ -34,8 +34,6 @@ See [USAGE.md](./USAGE.md)
 
 - changing file access/modify times (`utime(2)`) isn't restricted
 
-- POSIX (and System V) message queues aren't restricted
-
 ## Related projects
 
 ### Landrun
