@@ -142,7 +142,7 @@ func main() {
 
 			&cli.StringSliceFlag{
 				Name:     "syscalls",
-				Usage:    `extra allowed syscall groups ("keyring", "mq", "chmod", "chown", "xattr", "privileged")`,
+				Usage:    `extra allowed syscall groups ("keyring", "mq", "chmod", "chown", "xattr", "emulation", "privileged")`,
 				Category: "Seccomp",
 			},
 			&cli.StringSliceFlag{

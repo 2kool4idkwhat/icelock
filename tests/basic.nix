@@ -210,6 +210,11 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
     ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
 
+    ### SECCOMP - EMULATION SYSCALLS ###
+    ${succeed "--rx / -- setarch linux64 -- pwd"}
+    ${fail "--rx / -- setarch linux32 -- pwd"}
+    ${succeed "--rx / --syscalls=emulation -- setarch linux32 -- pwd"}
+
     ### NAMESPACES ###
     ${fail "--rx / -- unshare --user --net echo aaa"}
     ${succeed "--rx / --userns -- unshare --user --net echo aaa"}

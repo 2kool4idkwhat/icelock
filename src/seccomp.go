@@ -19,6 +19,7 @@ type seccompRule struct {
 }
 
 var (
+	actionAllow        = seccomp.ActAllow
 	actionEperm        = seccomp.ActErrno.SetReturnCode(int16(unix.EPERM))
 	actionEnosys       = seccomp.ActErrno.SetReturnCode(int16(unix.ENOSYS))
 	actionEafnosupport = seccomp.ActErrno.SetReturnCode(int16(unix.EAFNOSUPPORT))
@@ -27,7 +28,7 @@ var (
 func setupSeccomp(cfg *config) {
 
 	if cfg.SeccompEnabled {
-		filter, err := seccomp.NewFilter(seccomp.ActAllow)
+		filter, err := seccomp.NewFilter(actionAllow)
 		if err != nil {
 			log.Error("Failed to create a seccomp filter context: %v", err)
 			os.Exit(1)
@@ -62,7 +63,7 @@ func setupSeccomp(cfg *config) {
 			},
 		}
 
-		var sysKeyring, sysMq, sysChmod, sysChown, sysXattr, sysPrivileged bool
+		var sysKeyring, sysMq, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
 
 		for _, group := range cfg.Syscalls {
 			switch group {
@@ -80,6 +81,9 @@ func setupSeccomp(cfg *config) {
 
 			case "xattr":
 				sysXattr = true
+
+			case "emulation":
+				sysEmulation = true
 
 			case "privileged", "priv":
 				sysPrivileged = true
@@ -157,6 +161,26 @@ func setupSeccomp(cfg *config) {
 				"removexattrat",
 				"lremovexattr",
 				"fremovexattr",
+			)
+		}
+
+		// reduce the exposed kernel surface
+		if !sysEmulation {
+			blockedSyscallsEperm = append(blockedSyscallsEperm,
+				"modify_ldt",
+			)
+
+			// only allow PER_LINUX (0). Ideally we would also allow 0xFFFFFFFF (special value
+			// that's used for checking the current personality without changing it) but I don't
+			// think that's possible with libseccomp on a denylist filter
+			rules = append(rules,
+				seccompRule{
+					Action:   actionEperm,
+					Syscall:  unix.SYS_PERSONALITY,
+					Arg:      0,
+					Op:       seccomp.CompareNotEqual,
+					OpValue1: 0,
+				},
 			)
 		}
 
