@@ -125,7 +125,7 @@ in
             echo "export $var" >> "$file"
           done
 
-          echo "exec ${icelock} ${icelockArgs} -- "${package}/bin/$base" ${builtins.concatStringsSep " " appFlags} \$@" >> "$file"
+          echo "exec ${icelock} ${icelockArgs} -- "${package}/bin/$base" ${builtins.concatStringsSep " " appFlags} \"\$@\"" >> "$file"
 
           chmod +x "$file"
         done
@@ -142,7 +142,7 @@ in
             echo "export $var" >> "$path"
           done
 
-          echo "exec ${icelock} ${icelockArgs} -- "${package}$file" ${builtins.concatStringsSep " " appFlags} \$@" >> "$path"
+          echo "exec ${icelock} ${icelockArgs} -- "${package}$file" ${builtins.concatStringsSep " " appFlags} \"\$@\"" >> "$path"
 
           chmod +x "$path"
         done
