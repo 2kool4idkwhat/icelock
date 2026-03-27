@@ -46,6 +46,10 @@ If the app needs to connect to abstract unix sockets created outside the sandbox
 
 To allow POSIX and System V message queues use `--syscalls=mq`
 
+## Capabilities
+
+By default, icelock drops all capabilities (if it has any). To keep them use `--keep-caps`. WARNING: this is dangerous since capabilities are inherently dangerous, and some of them may allow sandbox escape
+
 ## User namespaces
 
 To allow the app to create user namespaces use `--userns`

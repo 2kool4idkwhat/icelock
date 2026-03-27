@@ -43,6 +43,8 @@ in
       socketFamilies ? [ ],
       syscalls ? [ ],
 
+      keepCaps ? false,
+
       userNamespaces ? false,
       ioUring ? false,
 
@@ -65,6 +67,8 @@ in
 
     assert isBool userNamespaces;
     assert isBool ioUring;
+
+    assert isBool keepCaps;
 
     assert isBool mdwe;
     let
@@ -94,6 +98,8 @@ in
 
           (boolOpt "--userns" userNamespaces)
           (boolOpt "--io-uring" ioUring)
+
+          (boolOpt "--keep-caps" keepCaps)
 
           (boolOpt "--mdwe" mdwe)
         ]

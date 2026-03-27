@@ -42,6 +42,8 @@ type config struct {
 	UserNamespaces bool
 	IoUring        bool
 
+	KeepCaps bool
+
 	Mdwe bool
 }
 
@@ -161,6 +163,11 @@ func main() {
 			},
 
 			&cli.BoolFlag{
+				Name:  "keep-caps",
+				Usage: "don't drop capabilities",
+			},
+
+			&cli.BoolFlag{
 				Name:  "mdwe",
 				Usage: "block W&X memory with the PR_MDWE_REFUSE_EXEC_GAIN prctl flag",
 			},
@@ -206,6 +213,8 @@ func main() {
 				UserNamespaces: cmd.Bool("userns"),
 				IoUring:        cmd.Bool("io-uring"),
 
+				KeepCaps: cmd.Bool("keep-caps"),
+
 				Mdwe: cmd.Bool("mdwe"),
 			}
 
@@ -220,9 +229,8 @@ func main() {
 			log.Debug("Landlock ABI version: %d", landlockAbi)
 
 			setupLandlock(&cfg)
-
 			setupSeccomp(&cfg)
-
+			setupCaps(&cfg)
 			setupMdwe(&cfg)
 
 			log.Info("Executing: %s, args: %v", appExe, getAppArgs(args))

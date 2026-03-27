@@ -222,11 +222,17 @@ pkgs.testers.runNixOSTest {
 
     # we aren't supposed to block creating other types of namespaces (these vm tests run
     # as root inside the vm, so we have CAP_SYS_ADMIN and thus should be able to create them)
-    ${succeed "--rx / -- unshare --net echo aaa"}
+    ${succeed "--rx / --keep-caps -- unshare --net echo aaa"}
 
     # landlock implicitly blocks modifying fs topology if fs access rights are handled
-    ${fail "--rx / --rw / -- unshare --mount echo aaa"}
-    ${succeed "--unrestricted-fs -- unshare --mount echo aaa"}
+    ${fail "--keep-caps --rx / --rw / -- unshare --mount echo aaa"}
+    ${succeed "--keep-caps --unrestricted-fs -- unshare --mount echo aaa"}
+
+    ### CAPABILITIES ###
+    ${succeedCmd "mkdir -p /tmp/chown-cap-test"}
+
+    ${fail "--unrestricted-fs -- chown messagebus /tmp/chown-cap-test"}
+    ${succeed "--unrestricted-fs --keep-caps -- chown messagebus /tmp/chown-cap-test"}
 
     ### MDWE ###
     ${succeed "--unrestricted-fs -- mdwe-test"}
