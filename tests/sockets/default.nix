@@ -15,4 +15,3 @@ buildGoModule {
     mainProgram = "socket-test";
   };
 }
-

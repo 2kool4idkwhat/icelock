@@ -6,19 +6,18 @@
 
 Icelock is a small CLI tool for restricting programs with [Landlock] (and seccomp). You can use icelock to run programs with reduced privileges
 
+Run `icelock --help` for a list of options, and see [USAGE.md](./USAGE.md) for details
+
 ## Compiling
 
 Just run `nix build`
 
 You can also run `go build -v` in the `src/` dir, but then you'll need to ensure that libseccomp and pkg-config are installed
 
-## Usage
-
-See [USAGE.md](./USAGE.md)
-
 ## Current limitations (non-exhaustive)
 
 - if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as Docker daemon)
+  - this will be addressed in the future using Landlock v9 ABI's pathname unix socket restrictions (not yet in a released kernel version)
 
 - execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
 
