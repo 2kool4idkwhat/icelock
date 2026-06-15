@@ -38,7 +38,7 @@ To allow the app to send signals to processes outside the sandbox use `--signals
 
 ### Unix sockets
 
-To allow unix sockets use `--af unix`. WARNING: This allows escaping the sandbox via D-bus, since Landlock currently can't restrict pathname unix sockets
+To allow unix sockets use `--af unix`. WARNING: This allows escaping the sandbox via D-bus, since icelock currently can't restrict pathname unix sockets on a per-path basis
 
 If the app needs to connect to abstract unix sockets created outside the sandbox also use `--abstract-unix`
 
@@ -78,6 +78,6 @@ This is the only thing that's not restricted by default because it doesn't provi
 
 You can use `--log-level` or the `ICELOCK_LOG_LEVEL` env var to set the log level
 
-Currently icelock doesn't set `LANDLOCK_RESTRICT_SELF_LOG_NEW_EXEC_ON`, so permission denials won't be logged in the audit subsystem (and you'd need a kernel with Landlock v7 ABI for that anyway). You can use `strace --status=failed` though
+Currently icelock doesn't set `LANDLOCK_RESTRICT_SELF_LOG_NEW_EXEC_ON`, so permission denials won't be logged in the audit subsystem. You can use `strace --status=failed` though
 
 While this is mainly useful for developing icelock, you can use `--seccomp-print` to view a human-readable version of the filter

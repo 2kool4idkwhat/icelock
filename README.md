@@ -17,7 +17,7 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 ## Current limitations (non-exhaustive)
 
 - if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as Docker daemon)
-  - this will be addressed in the future using Landlock v9 ABI's pathname unix socket restrictions (not yet in a released kernel version)
+  - this will be addressed in the future using Landlock v9 ABI's pathname unix socket restrictions
 
 - execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
 
@@ -41,7 +41,7 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 - landrun only passes the env vars that you explicitly specify, which makes it very annoying to use
 
-- icelock uses seccomp to block some dangerous things that Landlock can't restrict yet. Namely unix sockets as they allow escaping the sandbox via D-bus
+- icelock uses seccomp to block unix sockets by default since they allow escaping the sandbox via D-bus, [landrun doesn't](https://github.com/Zouuup/landrun/issues/43)
 
 - icelock has support for signal/abstract unix socket scoping
 
