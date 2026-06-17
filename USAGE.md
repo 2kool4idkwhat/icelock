@@ -78,6 +78,12 @@ This is the only thing that's not restricted by default because it doesn't provi
 
 You can use `--log-level` or the `ICELOCK_LOG_LEVEL` env var to set the log level
 
-Currently icelock doesn't set `LANDLOCK_RESTRICT_SELF_LOG_NEW_EXEC_ON`, so permission denials won't be logged in the audit subsystem. You can use `strace --status=failed` though
-
 While this is mainly useful for developing icelock, you can use `--seccomp-print` to view a human-readable version of the filter
+
+### Audit subsystem logging
+
+You can use `--audit` or the `ICELOCK_AUDIT` env var to log permission denials in the Audit subsystem
+
+You can also use `--no-audit-subdomains` to turn off logging for future nested landlock domains that the app creates
+
+See ["Landlock: system-wide management"](https://www.kernel.org/doc/html/latest/admin-guide/LSM/landlock.html) kernel docs for more info

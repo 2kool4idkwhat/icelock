@@ -15,6 +15,47 @@ import (
 
 const version = "26.03.2"
 
+const (
+	flagLogLevel = "log-level"
+
+	flagUnrestrictedFs = "unrestricted-fs"
+	flagRO             = "ro"
+	flagRX             = "rx"
+	flagRW             = "rw"
+
+	flagUnrestrictedNet = "unrestricted-net"
+	flagBindTCP         = "bind-tcp"
+	flagBindTCPAll      = "bind-tcp-all"
+	flagConnectTCP      = "connect-tcp"
+	flagConnectTCPAll   = "connect-tcp-all"
+
+	flagUnscopedIpc  = "unscoped-ipc"
+	flagSignals      = "signals"
+	flagAbstractUnix = "abstract-unix"
+
+	flagAudit             = "audit"
+	flagNoAuditSubdomains = "no-audit-subdomains"
+
+	flagNoSeccomp    = "no-seccomp"
+	flagSeccompPrint = "seccomp-print"
+	flagSyscalls     = "syscalls"
+	flagAF           = "af"
+	flagUserns       = "userns"
+	flagIoUring      = "io-uring"
+
+	flagKeepCaps = "keep-caps"
+
+	flagMdwe = "mdwe"
+)
+
+const (
+	categoryFilesystem = "Filesystem"
+	categoryNetwork    = "Network"
+	categoryIpcScoping = "IPC Scoping"
+	categoryAudit      = "Audit Subsystem Logging"
+	categorySeccomp    = "Seccomp"
+)
+
 type config struct {
 	LogLevel string
 
@@ -33,12 +74,13 @@ type config struct {
 	SignalsScoped      bool
 	AbstractUnixScoped bool
 
+	AuditLogNewExecOn     bool
+	AuditLogSubdomainsOff bool
+
 	SeccompEnabled bool
 	SeccompPrint   bool
-
 	Syscalls       []string
 	SocketFamilies []string
-
 	UserNamespaces bool
 	IoUring        bool
 
@@ -59,116 +101,129 @@ func main() {
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "log-level",
+				Name:    flagLogLevel,
 				Usage:   "set the log level",
 				Value:   "warn",
 				Sources: cli.EnvVars("ICELOCK_LOG_LEVEL"),
 			},
 
 			&cli.BoolFlag{
-				Name:     "unrestricted-fs",
+				Name:     flagUnrestrictedFs,
 				Usage:    "don't restrict filesystem access",
-				Category: "Filesystem",
+				Category: categoryFilesystem,
 			},
 			&cli.StringSliceFlag{
-				Name:      "ro",
+				Name:      flagRO,
 				Usage:     "allow read access beneath this path",
-				Category:  "Filesystem",
+				Category:  categoryFilesystem,
 				TakesFile: true,
 			},
 			&cli.StringSliceFlag{
-				Name:      "rx",
+				Name:      flagRX,
 				Usage:     "allow read/execute access beneath this path",
-				Category:  "Filesystem",
+				Category:  categoryFilesystem,
 				TakesFile: true,
 			},
 			&cli.StringSliceFlag{
-				Name:      "rw",
+				Name:      flagRW,
 				Usage:     "allow read/write access beneath this path",
-				Category:  "Filesystem",
+				Category:  categoryFilesystem,
 				TakesFile: true,
 			},
 
 			&cli.BoolFlag{
-				Name:     "unrestricted-net",
+				Name:     flagUnrestrictedNet,
 				Usage:    "don't restrict network access",
-				Category: "Network",
+				Category: categoryNetwork,
 			},
 			&cli.IntSliceFlag{
-				Name:     "bind-tcp",
+				Name:     flagBindTCP,
 				Usage:    "allow binding to this TCP port",
-				Category: "Network",
+				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
-				Name:     "bind-tcp-all",
+				Name:     flagBindTCPAll,
 				Usage:    "allow binding to all TCP ports",
-				Category: "Network",
+				Category: categoryNetwork,
 			},
 			&cli.IntSliceFlag{
-				Name:     "connect-tcp",
+				Name:     flagConnectTCP,
 				Usage:    "allow connecting to this TCP port",
-				Category: "Network",
+				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
-				Name:     "connect-tcp-all",
+				Name:     flagConnectTCPAll,
 				Usage:    "allow connecting to all TCP ports",
-				Category: "Network",
+				Category: categoryNetwork,
 			},
 
 			&cli.BoolFlag{
-				Name:     "unscoped-ipc",
+				Name:     flagUnscopedIpc,
 				Usage:    "don't scope IPC",
-				Category: "IPC",
+				Category: categoryIpcScoping,
 			},
 			&cli.BoolFlag{
-				Name:     "signals",
+				Name:     flagSignals,
 				Usage:    "don't scope signals",
-				Category: "IPC",
+				Category: categoryIpcScoping,
 			},
 			&cli.BoolFlag{
-				Name:     "abstract-unix",
+				Name:     flagAbstractUnix,
 				Usage:    "don't scope abstract unix sockets",
-				Category: "IPC",
+				Category: categoryIpcScoping,
 			},
 
 			&cli.BoolFlag{
-				Name:     "no-seccomp",
+				Name:     flagAudit,
+				Usage:    "turn on logging for the app",
+				Category: categoryAudit,
+				Sources:  cli.EnvVars("ICELOCK_AUDIT"),
+			},
+			&cli.BoolFlag{
+				Name:     flagNoAuditSubdomains,
+				Usage:    "turn off logging for nested landlock domains",
+				Category: categoryAudit,
+				Sources:  cli.EnvVars("ICELOCK_NO_AUDIT_SUBDOMAINS"),
+			},
+
+			&cli.BoolFlag{
+				Name:     flagNoSeccomp,
 				Usage:    "don't filter syscalls",
-				Category: "Seccomp",
+				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
-				Name:     "seccomp-print",
+				Name:     flagSeccompPrint,
 				Usage:    "print a human-readable version of the filter and exit",
-				Category: "Seccomp",
+				Category: categorySeccomp,
 			},
-
 			&cli.StringSliceFlag{
-				Name:     "syscalls",
+				Name:     flagSyscalls,
 				Usage:    `extra allowed syscall groups ("keyring", "mq", "chmod", "chown", "xattr", "emulation", "privileged")`,
-				Category: "Seccomp",
+				Category: categorySeccomp,
 			},
 			&cli.StringSliceFlag{
-				Name:     "af",
+				Name:     flagAF,
 				Usage:    `allowed socket address families ("netlink", "unix", "inet", "other")`,
-				Category: "Seccomp",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagUserns,
+				Usage:    "allow creating user namespaces",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagIoUring,
+				Usage:    "allow using io_uring",
+				Category: categorySeccomp,
 			},
 
 			&cli.BoolFlag{
-				Name:  "userns",
-				Usage: "allow creating user namespaces",
-			},
-			&cli.BoolFlag{
-				Name:  "io-uring",
-				Usage: "allow using io_uring",
-			},
-
-			&cli.BoolFlag{
-				Name:  "keep-caps",
+				Name:  flagKeepCaps,
 				Usage: "don't drop capabilities",
 			},
 
 			&cli.BoolFlag{
-				Name:  "mdwe",
+				Name:  flagMdwe,
 				Usage: "block W&X memory with the PR_MDWE_REFUSE_EXEC_GAIN prctl flag",
 			},
 		},
@@ -187,35 +242,36 @@ func main() {
 			}
 
 			cfg := config{
-				LogLevel: cmd.String("log-level"),
+				LogLevel: cmd.String(flagLogLevel),
 
-				FsRestricted: !cmd.Bool("unrestricted-fs"),
-				FsRO:         cmd.StringSlice("ro"),
-				FsRX:         cmd.StringSlice("rx"),
-				FsRW:         cmd.StringSlice("rw"),
+				FsRestricted: !cmd.Bool(flagUnrestrictedFs),
+				FsRO:         cmd.StringSlice(flagRO),
+				FsRX:         cmd.StringSlice(flagRX),
+				FsRW:         cmd.StringSlice(flagRW),
 
-				NetRestricted:    !cmd.Bool("unrestricted-net"),
-				NetBindTCP:       cmd.IntSlice("bind-tcp"),
-				NetBindTCPAll:    cmd.Bool("bind-tcp-all"),
-				NetConnectTCP:    cmd.IntSlice("connect-tcp"),
-				NetConnectTCPAll: cmd.Bool("connect-tcp-all"),
+				NetRestricted:    !cmd.Bool(flagUnrestrictedNet),
+				NetBindTCP:       cmd.IntSlice(flagBindTCP),
+				NetBindTCPAll:    cmd.Bool(flagBindTCPAll),
+				NetConnectTCP:    cmd.IntSlice(flagConnectTCP),
+				NetConnectTCPAll: cmd.Bool(flagConnectTCPAll),
 
-				IpcScoped:          !cmd.Bool("unscoped-ipc"),
-				SignalsScoped:      !cmd.Bool("signals"),
-				AbstractUnixScoped: !cmd.Bool("abstract-unix"),
+				IpcScoped:          !cmd.Bool(flagUnscopedIpc),
+				SignalsScoped:      !cmd.Bool(flagSignals),
+				AbstractUnixScoped: !cmd.Bool(flagAbstractUnix),
 
-				SeccompEnabled: !cmd.Bool("no-seccomp"),
-				SeccompPrint:   cmd.Bool("seccomp-print"),
+				AuditLogNewExecOn:     cmd.Bool(flagAudit),
+				AuditLogSubdomainsOff: cmd.Bool(flagNoAuditSubdomains),
 
-				Syscalls:       cmd.StringSlice("syscalls"),
-				SocketFamilies: cmd.StringSlice("af"),
+				SeccompEnabled: !cmd.Bool(flagNoSeccomp),
+				SeccompPrint:   cmd.Bool(flagSeccompPrint),
+				Syscalls:       cmd.StringSlice(flagSyscalls),
+				SocketFamilies: cmd.StringSlice(flagAF),
+				UserNamespaces: cmd.Bool(flagUserns),
+				IoUring:        cmd.Bool(flagIoUring),
 
-				UserNamespaces: cmd.Bool("userns"),
-				IoUring:        cmd.Bool("io-uring"),
+				KeepCaps: cmd.Bool(flagKeepCaps),
 
-				KeepCaps: cmd.Bool("keep-caps"),
-
-				Mdwe: cmd.Bool("mdwe"),
+				Mdwe: cmd.Bool(flagMdwe),
 			}
 
 			log.SetLevel(cfg.LogLevel)

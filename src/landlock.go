@@ -101,6 +101,15 @@ func setupLandlock(cfg *config) {
 		log.Error("Failed to create landlock config: %v", err)
 		os.Exit(1)
 	}
+	*llConfig = llConfig.DisableLoggingForOriginatingProcess()
+
+	if cfg.AuditLogNewExecOn {
+		*llConfig = llConfig.EnableLoggingForSubprocesses()
+	}
+	if cfg.AuditLogSubdomainsOff {
+		*llConfig = llConfig.DisableLoggingForSubdomains()
+	}
+
 	log.Info("Landlock config: %s", llConfig.String())
 
 	err = llConfig.Restrict(rules...)
