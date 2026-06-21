@@ -358,15 +358,21 @@ func setupSeccomp(cfg *config) {
 				os.Exit(1)
 			}
 			os.Exit(0)
-		} else {
-			err := filter.Load()
+		}
+		if cfg.SeccompPrintBPF {
+			err := filter.ExportBPF(os.Stdout)
 			if err != nil {
-				log.Error("Failed to apply seccomp filter: %v", err)
+				log.Error("Failed to export seccomp filter: %v", err)
 				os.Exit(1)
 			}
-			log.Info("Applied seccomp filter")
+			os.Exit(0)
 		}
-
+		err = filter.Load()
+		if err != nil {
+			log.Error("Failed to apply seccomp filter: %v", err)
+			os.Exit(1)
+		}
+		log.Info("Applied seccomp filter")
 	}
 }
 

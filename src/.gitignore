@@ -1,4 +1,6 @@
 icelock
 
+*.bpf
+
 # landlock-auditer file
 audit.json

@@ -36,12 +36,13 @@ const (
 	flagAudit             = "audit"
 	flagNoAuditSubdomains = "no-audit-subdomains"
 
-	flagNoSeccomp    = "no-seccomp"
-	flagSeccompPrint = "seccomp-print"
-	flagSyscalls     = "syscalls"
-	flagAF           = "af"
-	flagUserns       = "userns"
-	flagIoUring      = "io-uring"
+	flagNoSeccomp       = "no-seccomp"
+	flagSeccompPrint    = "seccomp-print"
+	flagSeccompPrintBPF = "seccomp-print-bpf"
+	flagSyscalls        = "syscalls"
+	flagAF              = "af"
+	flagUserns          = "userns"
+	flagIoUring         = "io-uring"
 
 	flagKeepCaps = "keep-caps"
 
@@ -77,12 +78,13 @@ type config struct {
 	AuditLogNewExecOn     bool
 	AuditLogSubdomainsOff bool
 
-	SeccompEnabled bool
-	SeccompPrint   bool
-	Syscalls       []string
-	SocketFamilies []string
-	UserNamespaces bool
-	IoUring        bool
+	SeccompEnabled  bool
+	SeccompPrint    bool
+	SeccompPrintBPF bool
+	Syscalls        []string
+	SocketFamilies  []string
+	UserNamespaces  bool
+	IoUring         bool
 
 	KeepCaps bool
 
@@ -98,6 +100,26 @@ func main() {
 
 		// disable the help subcommand ($ icelock help) since it's unintuitive
 		HideHelpCommand: true,
+
+		MutuallyExclusiveFlags: []cli.MutuallyExclusiveFlags{
+			{
+				Category: categorySeccomp,
+				Flags: [][]cli.Flag{
+					{
+						&cli.BoolFlag{
+							Name:  flagSeccompPrint,
+							Usage: "print a human-readable version of the filter and exit",
+						},
+					},
+					{
+						&cli.BoolFlag{
+							Name:  flagSeccompPrintBPF,
+							Usage: "print the raw bpf filter and exit",
+						},
+					},
+				},
+			},
+		},
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -191,11 +213,6 @@ func main() {
 				Usage:    "don't filter syscalls",
 				Category: categorySeccomp,
 			},
-			&cli.BoolFlag{
-				Name:     flagSeccompPrint,
-				Usage:    "print a human-readable version of the filter and exit",
-				Category: categorySeccomp,
-			},
 			&cli.StringSliceFlag{
 				Name:     flagSyscalls,
 				Usage:    `extra allowed syscall groups ("keyring", "mq", "chmod", "chown", "xattr", "emulation", "privileged")`,
@@ -262,12 +279,13 @@ func main() {
 				AuditLogNewExecOn:     cmd.Bool(flagAudit),
 				AuditLogSubdomainsOff: cmd.Bool(flagNoAuditSubdomains),
 
-				SeccompEnabled: !cmd.Bool(flagNoSeccomp),
-				SeccompPrint:   cmd.Bool(flagSeccompPrint),
-				Syscalls:       cmd.StringSlice(flagSyscalls),
-				SocketFamilies: cmd.StringSlice(flagAF),
-				UserNamespaces: cmd.Bool(flagUserns),
-				IoUring:        cmd.Bool(flagIoUring),
+				SeccompEnabled:  !cmd.Bool(flagNoSeccomp),
+				SeccompPrint:    cmd.Bool(flagSeccompPrint),
+				SeccompPrintBPF: cmd.Bool(flagSeccompPrintBPF),
+				Syscalls:        cmd.StringSlice(flagSyscalls),
+				SocketFamilies:  cmd.StringSlice(flagAF),
+				UserNamespaces:  cmd.Bool(flagUserns),
+				IoUring:         cmd.Bool(flagIoUring),
 
 				KeepCaps: cmd.Bool(flagKeepCaps),
 
