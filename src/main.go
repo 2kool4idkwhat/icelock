@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const version = "26.03.2"
+const version = "26.06.1"
 
 const (
 	flagLogLevel = "log-level"
