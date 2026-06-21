@@ -33,6 +33,7 @@ func setupSeccomp(cfg *config) {
 			log.Error("Failed to create a seccomp filter context: %v", err)
 			os.Exit(1)
 		}
+		filter.SetOptimize(2)
 
 		blockedSyscallsEperm := []string{}
 		blockedSyscallsEnosys := []string{}
