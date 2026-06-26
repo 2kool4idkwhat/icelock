@@ -18,16 +18,14 @@ type seccompRule struct {
 	OpValue2 uint64
 }
 
-var (
-	actionAllow        = seccomp.ActAllow
-	actionEperm        = seccomp.ActErrno.SetReturnCode(int16(unix.EPERM))
-	actionEnosys       = seccomp.ActErrno.SetReturnCode(int16(unix.ENOSYS))
-	actionEafnosupport = seccomp.ActErrno.SetReturnCode(int16(unix.EAFNOSUPPORT))
-)
-
 func setupSeccomp(cfg *config) {
 
 	if cfg.SeccompEnabled {
+		actionAllow := seccomp.ActAllow
+		actionEPERM := seccomp.ActErrno.SetReturnCode(int16(unix.EPERM))
+		actionENOSYS := seccomp.ActErrno.SetReturnCode(int16(unix.ENOSYS))
+		actionEAFNOSUPPORT := seccomp.ActErrno.SetReturnCode(int16(unix.EAFNOSUPPORT))
+
 		filter, err := seccomp.NewFilter(actionAllow)
 		if err != nil {
 			log.Error("Failed to create a seccomp filter context: %v", err)
@@ -35,8 +33,8 @@ func setupSeccomp(cfg *config) {
 		}
 		filter.SetOptimize(2)
 
-		blockedSyscallsEperm := []string{}
-		blockedSyscallsEnosys := []string{}
+		blockedSyscallsEPERM := []string{}
+		blockedSyscallsENOSYS := []string{}
 
 		rules := []seccompRule{
 			// modern distros should disable TIOCSTI, but we block it in case they don't.
@@ -44,7 +42,7 @@ func setupSeccomp(cfg *config) {
 			//
 			// NOTE: if TIOCSTI is blocked by the sysctl, the error will be EIO
 			{
-				Action:   actionEperm,
+				Action:   actionEPERM,
 				Syscall:  unix.SYS_IOCTL,
 				Arg:      1,
 				Op:       seccomp.CompareMaskedEqual,
@@ -55,7 +53,7 @@ func setupSeccomp(cfg *config) {
 			// TIOCLINUX needs CAP_SYS_ADMIN, but we block it anyway as there's no
 			// legitimate reason to use it
 			{
-				Action:   actionEperm,
+				Action:   actionEPERM,
 				Syscall:  unix.SYS_IOCTL,
 				Arg:      1,
 				Op:       seccomp.CompareMaskedEqual,
@@ -97,7 +95,7 @@ func setupSeccomp(cfg *config) {
 		// blocking kernel keyring access would have prevented CVE-2024-42318 (landlock bypass),
 		// and most things don't need it anyway
 		if !sysKeyring {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"add_key",
 				"keyctl",
 				"request_key",
@@ -109,7 +107,7 @@ func setupSeccomp(cfg *config) {
 		// see https://github.com/landlock-lsm/linux/issues/29
 		// and https://github.com/landlock-lsm/linux/issues/30
 		if !sysMq {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				// posix
 				"mq_getsetattr",
 				"mq_notify",
@@ -129,7 +127,7 @@ func setupSeccomp(cfg *config) {
 		// landlock can't restrict chmod as of ABI v7
 		// see https://github.com/landlock-lsm/linux/issues/11
 		if !sysChmod && cfg.FsRestricted {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"chmod",
 				"fchmod",
 				"fchmodat",
@@ -139,7 +137,7 @@ func setupSeccomp(cfg *config) {
 
 		// landlock can't restrict chown as of ABI v7
 		if !sysChown && cfg.FsRestricted {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"chown",
 				"chown32",
 				"fchown",
@@ -152,7 +150,7 @@ func setupSeccomp(cfg *config) {
 
 		// landlock can't restrict xattrs as of ABI v7, so block changing them (but not reading them)
 		if !sysXattr && cfg.FsRestricted {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"setxattr",
 				"setxattrat",
 				"lsetxattr",
@@ -167,7 +165,7 @@ func setupSeccomp(cfg *config) {
 
 		// reduce the exposed kernel surface
 		if !sysEmulation {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"modify_ldt",
 			)
 
@@ -176,7 +174,7 @@ func setupSeccomp(cfg *config) {
 			// think that's possible with libseccomp on a denylist filter
 			rules = append(rules,
 				seccompRule{
-					Action:   actionEperm,
+					Action:   actionEPERM,
 					Syscall:  unix.SYS_PERSONALITY,
 					Arg:      0,
 					Op:       seccomp.CompareNotEqual,
@@ -188,7 +186,7 @@ func setupSeccomp(cfg *config) {
 		// block some syscalls that unprivileged processes shouldn't be able to use anyway
 		// to reduce the exposed kernel surface
 		if !sysPrivileged {
-			blockedSyscallsEperm = append(blockedSyscallsEperm,
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				// @module systemd group
 				"delete_module",
 				"finit_module",
@@ -221,7 +219,7 @@ func setupSeccomp(cfg *config) {
 				// TODO: test on arm64 (since apparently the clone() syscall args order is
 				//  different there)
 				seccompRule{
-					Action:   actionEperm,
+					Action:   actionEPERM,
 					Syscall:  unix.SYS_CLONE,
 					Arg:      0,
 					Op:       seccomp.CompareMaskedEqual,
@@ -230,7 +228,7 @@ func setupSeccomp(cfg *config) {
 				},
 
 				seccompRule{
-					Action:   actionEperm,
+					Action:   actionEPERM,
 					Syscall:  unix.SYS_UNSHARE,
 					Arg:      0,
 					Op:       seccomp.CompareMaskedEqual,
@@ -241,7 +239,7 @@ func setupSeccomp(cfg *config) {
 
 			// seccomp can't look into clone3() args, so we block it with ENOSYS so that the app
 			// falls back to clone(). Flatpak also does this
-			blockedSyscallsEnosys = append(blockedSyscallsEnosys, "clone3")
+			blockedSyscallsENOSYS = append(blockedSyscallsENOSYS, "clone3")
 		}
 
 		// io_uring can be used to create sockets without using the socket() syscall [1]
@@ -254,26 +252,26 @@ func setupSeccomp(cfg *config) {
 		//
 		// ENOSYS so that the app falls back to something else
 		if !cfg.IoUring {
-			blockedSyscallsEnosys = append(blockedSyscallsEnosys,
+			blockedSyscallsENOSYS = append(blockedSyscallsENOSYS,
 				"io_uring_enter",
 				"io_uring_register",
 				"io_uring_setup",
 			)
 		}
 
-		for _, syscall := range blockedSyscallsEperm {
-			err := filter.AddRule(getSyscall(syscall), actionEperm)
+		for _, syscall := range blockedSyscallsEPERM {
+			err := filter.AddRule(getSyscall(syscall), actionEPERM)
 			if err != nil {
 				panic(err)
 			}
 		}
-		for _, syscall := range blockedSyscallsEnosys {
-			err := filter.AddRule(getSyscall(syscall), actionEnosys)
+		for _, syscall := range blockedSyscallsENOSYS {
+			err := filter.AddRule(getSyscall(syscall), actionENOSYS)
 			if err != nil {
 				panic(err)
 			}
 		}
-		log.Debug("Blocked syscalls: %v (EPERM), %v (ENOSYS)", blockedSyscallsEperm, blockedSyscallsEnosys)
+		log.Debug("Blocked syscalls: %v (EPERM), %v (ENOSYS)", blockedSyscallsEPERM, blockedSyscallsENOSYS)
 
 		var afNetlink, afUnix, afInet, afOther bool
 
@@ -314,7 +312,7 @@ func setupSeccomp(cfg *config) {
 		// AF_NETLINK (16)
 		if !afOther {
 			rules = append(rules, seccompRule{
-				Action:   actionEafnosupport,
+				Action:   actionEAFNOSUPPORT,
 				Syscall:  unix.SYS_SOCKET,
 				Arg:      0,
 				Op:       seccomp.CompareGreater,
@@ -333,7 +331,7 @@ func setupSeccomp(cfg *config) {
 
 		for _, af := range blockedAf {
 			rules = append(rules, seccompRule{
-				Action:   actionEafnosupport,
+				Action:   actionEAFNOSUPPORT,
 				Syscall:  unix.SYS_SOCKET,
 				Arg:      0,
 				Op:       seccomp.CompareEqual,
