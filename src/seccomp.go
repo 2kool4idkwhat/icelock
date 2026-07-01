@@ -242,13 +242,19 @@ func setupSeccomp(cfg *config) {
 			blockedSyscallsENOSYS = append(blockedSyscallsENOSYS, "clone3")
 		}
 
-		// io_uring can be used to create sockets without using the socket() syscall [1]
-		// which in theory allows escaping the sandbox via unix sockets
+		// io_uring can be used to bypass LANDLOCK_ACCESS_FS_IOCTL_DEV [1]
 		//
-		// io_uring has also caused vulnerabilities in the past [2]
+		// io_uring can be used to create sockets without using the socket() syscall [2]
+		// which in theory allows bypassing our seccomp-based socket family restrictions
 		//
-		// [1]: https://gist.github.com/rusty-snake/4fc70c99b9ec53292c90546b790f7429
-		// [2]: https://security.googleblog.com/2023/06/learnings-from-kctf-vrps-42-linux.html
+		// io_uring has also caused vulnerabilities in the past [3]
+		//
+		// TODO: can we solve issues [1] and [2] by using a BPF filter? [4]
+		//
+		// [1]: https://github.com/landlock-lsm/linux/issues/65
+		// [2]: https://gist.github.com/rusty-snake/4fc70c99b9ec53292c90546b790f7429
+		// [3]: https://security.googleblog.com/2023/06/learnings-from-kctf-vrps-42-linux.html
+		// [4]: https://kernelnewbies.org/Linux_7.0#Better_io_uring_support_for_filters
 		//
 		// ENOSYS so that the app falls back to something else
 		if !cfg.IoUring {
@@ -273,21 +279,21 @@ func setupSeccomp(cfg *config) {
 		}
 		log.Debug("Blocked syscalls: %v (EPERM), %v (ENOSYS)", blockedSyscallsEPERM, blockedSyscallsENOSYS)
 
-		var afNetlink, afUnix, afInet, afOther bool
+		var afNetlink, afInet, afOther bool
 
 		for _, af := range cfg.SocketFamilies {
 			switch af {
 			case "netlink":
 				afNetlink = true
-			case "unix":
-				afUnix = true
 			case "inet":
 				afInet = true
 			case "other":
 				afOther = true
 
+			case "unix":
+				log.Warn("AF_UNIX is already allowed by default, you can remove '--af=unix'")
 			case "inet6":
-				log.Warn("AF_INET6 is included with '--af inet', use that instead of '--af inet6'")
+				log.Warn("AF_INET6 is included with '--af=inet', use that instead of '--af=inet6'")
 
 			default:
 				log.Warn("Unknown address family '%s', skipping", af)
@@ -298,10 +304,6 @@ func setupSeccomp(cfg *config) {
 
 		if !afNetlink {
 			blockedAf = append(blockedAf, unix.AF_NETLINK)
-		}
-
-		if !afUnix {
-			blockedAf = append(blockedAf, unix.AF_UNIX)
 		}
 
 		if !afInet && cfg.NetRestricted {

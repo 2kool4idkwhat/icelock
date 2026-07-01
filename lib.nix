@@ -28,6 +28,7 @@ in
       ro ? [ ],
       rx ? [ "/nix/store" ],
       rw ? [ ],
+      unix ? [ ],
 
       restrictNet ? true,
       bindTcp ? [ ],
@@ -54,6 +55,7 @@ in
     assert isList ro;
     assert isList rx;
     assert isList rw;
+    assert isList unix;
 
     assert isBool restrictNet;
     assert isList bindTcp;
@@ -81,6 +83,7 @@ in
           (listOpt "--ro" ro)
           (listOpt "--rx" rx)
           (listOpt "--rw" rw)
+          (listOpt "--unix" unix)
 
           (boolOpt "--unrestricted-net" (!restrictNet))
           (portListOpt "--bind-tcp" bindTcp)

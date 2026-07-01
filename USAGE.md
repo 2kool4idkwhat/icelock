@@ -8,7 +8,7 @@ By default everything that icelock can restrict is denied and needs to be explic
 
 ## Filesystem
 
-Use `--ro` to allow read access beneath a path, `--rw` for read/write access, and `--rx` for read/execute access
+Use `--ro` to allow read access beneath a path, `--rw` for read/write access, `--rx` for read/execute access, and `--unix` for pathname unix socket access
 
 The final allowed FS access is the sum of all rules, so if you run `icelock --rw=/aaa --rx=/aaa/bbb/ccc` then the app will have write access to `/aaa/bbb/ccc` because that path is below `/aaa`
 
@@ -16,7 +16,7 @@ Under the hood FS rules apply to file descriptors (not path strings), so to allo
 
 Since Landlock currently can't restrict chmod, chown, and writing extended attributes, these are blocked with seccomp. To allow them use `--syscalls=chmod,chown,xattr`
 
-If you don't want to restrict FS access use `--unrestricted-fs` (this also allows chmod/chown/xattr syscalls). WARNING: This allows escaping the sandbox by writing to one of the many dangerous files like `~/.bashrc`
+If you don't want to restrict FS access use `--unrestricted-fs` (this also allows chmod/chown/xattr syscalls). WARNING: This allows escaping the sandbox
 
 `--unrestricted-fs` is needed to run apps that use mount namespaces for their own sandboxing, such as bubblewrap
 
@@ -36,11 +36,9 @@ If you don't want to scope IPC use `--unscoped-ipc`
 
 To allow the app to send signals to processes outside the sandbox use `--signals`
 
-### Unix sockets
+### Abstract unix sockets
 
-To allow unix sockets use `--af unix`. WARNING: This allows escaping the sandbox via D-bus, since icelock currently can't restrict pathname unix sockets on a per-path basis
-
-If the app needs to connect to abstract unix sockets created outside the sandbox also use `--abstract-unix`
+To allow connecting to abstract unix sockets created outside the sandbox use `--abstract-unix`
 
 ### Message queues
 
@@ -58,7 +56,7 @@ NOTE: as mentioned in the filesystem section, if filesystem access is restricted
 
 ## io_uring
 
-To allow the app to use io_uring use `--io-uring`. WARNING: this may allow escaping the sandbox, since io_uring can be used to create unix sockets
+To allow the app to use io_uring use `--io-uring`. WARNING: this may allow bypassing some restrictions
 
 ## Seccomp
 
@@ -66,7 +64,7 @@ In addition to syscall groups mentioned in previous sections, keyring, emulation
 
 TIOCSTI and TIOCLINUX are also blocked since there's no legitimate reason to use them and they've been the source of many vulnerabilities
 
-You can disable seccomp with `--no-seccomp`. WARNING: This allows escaping the sandbox via D-bus since unix socket restrictions are currently implemented with seccomp
+You can disable seccomp with `--no-seccomp`
 
 ## MDWE (Memory-Deny-Write-Execute)
 

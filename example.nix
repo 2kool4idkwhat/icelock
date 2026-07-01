@@ -24,8 +24,6 @@
 
     extraBinPaths = [ "/libexec/gnome-calculator-search-provider" ];
 
-    socketFamilies = [ "unix" ];
-
     restrictFs = false;
   };
 

@@ -16,12 +16,14 @@ import (
 const version = "26.06.1"
 
 const (
-	flagLogLevel = "log-level"
+	flagLogLevel   = "log-level"
+	flagBestEffort = "best-effort"
 
 	flagUnrestrictedFs = "unrestricted-fs"
 	flagRO             = "ro"
 	flagRX             = "rx"
 	flagRW             = "rw"
+	flagUnix           = "unix"
 
 	flagUnrestrictedNet = "unrestricted-net"
 	flagBindTCP         = "bind-tcp"
@@ -58,12 +60,14 @@ const (
 )
 
 type config struct {
-	LogLevel string
+	LogLevel   string
+	BestEffort bool
 
 	FsRestricted bool
 	FsRO         []string
 	FsRX         []string
 	FsRW         []string
+	FsUnix       []string
 
 	NetRestricted    bool
 	NetBindTCP       []int
@@ -114,7 +118,7 @@ func main() {
 					{
 						&cli.BoolFlag{
 							Name:  flagSeccompPrintBPF,
-							Usage: "print the raw bpf filter and exit",
+							Usage: "print the raw BPF filter and exit",
 						},
 					},
 				},
@@ -124,9 +128,13 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    flagLogLevel,
-				Usage:   "set the log level",
+				Usage:   `set the log level ("debug", "info", "warn", "error")`,
 				Value:   "warn",
 				Sources: cli.EnvVars("ICELOCK_LOG_LEVEL"),
+			},
+			&cli.BoolFlag{
+				Name:  flagBestEffort,
+				Usage: "disable unsupported landlock features",
 			},
 
 			&cli.BoolFlag{
@@ -149,6 +157,12 @@ func main() {
 			&cli.StringSliceFlag{
 				Name:      flagRW,
 				Usage:     "allow read/write access beneath this path",
+				Category:  categoryFilesystem,
+				TakesFile: true,
+			},
+			&cli.StringSliceFlag{
+				Name:      flagUnix,
+				Usage:     "allow unix socket access beneath this path",
 				Category:  categoryFilesystem,
 				TakesFile: true,
 			},
@@ -220,7 +234,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:     flagAF,
-				Usage:    `allowed socket address families ("netlink", "unix", "inet", "other")`,
+				Usage:    `allowed socket address families ("netlink", "inet", "other")`,
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
@@ -259,12 +273,14 @@ func main() {
 			}
 
 			cfg := config{
-				LogLevel: cmd.String(flagLogLevel),
+				LogLevel:   cmd.String(flagLogLevel),
+				BestEffort: cmd.Bool(flagBestEffort),
 
 				FsRestricted: !cmd.Bool(flagUnrestrictedFs),
 				FsRO:         cmd.StringSlice(flagRO),
 				FsRX:         cmd.StringSlice(flagRX),
 				FsRW:         cmd.StringSlice(flagRW),
+				FsUnix:       cmd.StringSlice(flagUnix),
 
 				NetRestricted:    !cmd.Bool(flagUnrestrictedNet),
 				NetBindTCP:       cmd.IntSlice(flagBindTCP),
@@ -302,9 +318,14 @@ func main() {
 			}
 			log.Debug("Landlock ABI version: %d", landlockAbi)
 
+			// libcap uses libpsx which needs to read /proc/pid/task, so we have
+			// to drop caps before setting up landlock
+			// (go-landlock used to implicitly add a rule to allow that, but now it
+			// only does that if LANDLOCK_RESTRICT_SELF_TSYNC isn't available)
+			setupCaps(&cfg)
+
 			setupLandlock(&cfg)
 			setupSeccomp(&cfg)
-			setupCaps(&cfg)
 			setupMdwe(&cfg)
 
 			log.Info("Executing: %s, args: %v", appExe, getAppArgs(args))

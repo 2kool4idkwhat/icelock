@@ -27,6 +27,9 @@ pkgs.testers.runNixOSTest {
 
         pkgs.keyutils
       ];
+
+      # use latest kernel for LANDLOCK_ACCESS_FS_RESOLVE_UNIX (added in 7.1)
+      boot.kernelPackages = pkgs.linuxPackages_latest;
     };
 
   testScript = ''
@@ -132,6 +135,18 @@ pkgs.testers.runNixOSTest {
     ${fail "--ro / --rx ${pkgs.glibc} -- pwd"}
     ${succeed "--ro / --rx $(which pwd) --rx ${pkgs.glibc} -- pwd"}
 
+    ### FS - UNIX SOCKETS ###
+    ${fail "--rx /nix -- busctl"}
+    ${fail "--rx / -- busctl"}
+    ${fail "--rx /nix --rw / -- busctl"}
+    ${fail "--rx /nix --ro / -- busctl"}
+    ${fail "--rx /nix --unix /etc -- busctl"}
+
+    ${succeed "--rx /nix --unix / -- busctl"}
+    ${succeed "--rx /nix --unix /run -- busctl"}
+    ${succeed "--rx /nix --unix /run/dbus -- busctl"}
+    ${succeed "--rx /nix --unix /run/dbus/system_bus_socket -- busctl"}
+
     ### FS - INVALID PATHS ###
     # icelock should ignore specified paths that don't exist
     ${succeed "--rx /nix --rx /aaa -- pwd"}
@@ -162,9 +177,6 @@ pkgs.testers.runNixOSTest {
     ${succeedCmd "${./signal.sh} --unscoped-ipc"}
 
     ### SECCOMP - SOCKETS ###
-    ${fail "--rx / -- socket-test --af unix"}
-    ${succeed "--rx / --af=unix -- socket-test --af unix"}
-
     ${fail "--rx / -- socket-test --af inet"}
     ${succeed "--rx / --af=inet -- socket-test --af inet"}
 
@@ -173,13 +185,6 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- socket-test --af vsock"}
     ${succeed "--rx / --af=other -- socket-test --af vsock"}
-
-    ### SECCOMP - UNIX SOCKETS ###
-    ${fail "--rx /nix -- busctl"}
-    ${fail "--rx /nix --af inet -- busctl"}
-
-    ${succeed "--rx /nix --af unix -- busctl"}
-    ${succeed "--rx /nix --no-seccomp -- busctl"}
 
     ### SECCOMP - KEYRING SYSCALLS ###
     ${failCmd "${./keyring.sh}"}

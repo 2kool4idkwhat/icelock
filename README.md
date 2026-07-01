@@ -16,9 +16,6 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 ## Current limitations (non-exhaustive)
 
-- if unix sockets are allowed (`--af unix`) the sandbox can be escaped via D-bus (and potentially any other service that has a pathname unix socket, such as Docker daemon)
-  - this will be addressed in the future using Landlock v9 ABI's pathname unix socket restrictions
-
 - execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
 
 - if filesystem access is restricted the app can't modify filesystem topology, which breaks bubblewrap and other sandboxing solutions that use mount namespaces
@@ -39,19 +36,17 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 [Landrun] was the initial inspiration for icelock, and what got me interested in Landlock in the first place. That being said, there are some major differences. As of landrun version 0.1.15:
 
+- landrun doesn't restrict unix sockets, which allows for [sandbox escape](https://github.com/Zouuup/landrun/issues/43)
+
 - landrun only passes the env vars that you explicitly specify, which makes it very annoying to use
 
-- icelock uses seccomp to block unix sockets by default since they allow escaping the sandbox via D-bus, [landrun doesn't](https://github.com/Zouuup/landrun/issues/43)
+- icelock has support for Landlock features up to ABI v9, while landrun only up to v5
 
-- icelock has support for signal/abstract unix socket scoping
+- icelock uses seccomp (in addition to Landlock)
+
+- icelock drops capabilities by default
 
 - landrun has flags for automatically adding the app executable/libraries to RX paths
-
-- landrun has a best-effort mode
-
-- icelock doesn't have a `--rwx` flag because you very rarely want to have a path that is both writable and executable, and if you do then you can just combine the `--rx` and `--rw` flags
-
-- in icelock the RX paths flag is called `--rx`, in landrun it's `--rox`
 
 ### Island
 

@@ -11,7 +11,7 @@ import (
 
 const (
 	// The set of access rights that apply to files
-	accessFile landlock.AccessFSSet = llsys.AccessFSExecute | llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSReadFile | llsys.AccessFSIoctlDev
+	accessFile landlock.AccessFSSet = llsys.AccessFSExecute | llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSReadFile | llsys.AccessFSIoctlDev | llsys.AccessFSResolveUnix
 
 	// The set of access rights associated with read access
 	accessFSRead landlock.AccessFSSet = llsys.AccessFSReadFile | llsys.AccessFSReadDir
@@ -22,8 +22,8 @@ const (
 	// The set of access rights associated with read/write access
 	accessFSReadWrite landlock.AccessFSSet = accessFSRead | accessFSWrite
 
-	// The set of filesystem access rights
-	accessFSAll landlock.AccessFSSet = accessFSReadWrite | llsys.AccessFSExecute
+	// The full set of filesystem access rights
+	accessFSAll landlock.AccessFSSet = accessFSReadWrite | llsys.AccessFSExecute | llsys.AccessFSResolveUnix
 )
 
 var home string
@@ -55,6 +55,9 @@ func setupLandlock(cfg *config) {
 		}
 		for _, path := range cfg.FsRW {
 			rules = append(rules, rwPath(path))
+		}
+		for _, path := range cfg.FsUnix {
+			rules = append(rules, unixPath(path))
 		}
 
 		if len(cfg.FsRX) == 0 && !cfg.SeccompPrint {
@@ -108,6 +111,10 @@ func setupLandlock(cfg *config) {
 	}
 	if cfg.AuditLogSubdomainsOff {
 		*llConfig = llConfig.DisableLoggingForSubdomains()
+	}
+
+	if cfg.BestEffort {
+		*llConfig = llConfig.BestEffort()
 	}
 
 	log.Info("Landlock config: %s", llConfig.String())
@@ -175,4 +182,11 @@ func rwPath(path string) landlock.FSRule {
 	}
 
 	return landlock.PathAccess(accessRights, expandedPath).IgnoreIfMissing()
+}
+
+func unixPath(path string) landlock.FSRule {
+	expandedPath := expandTilde(path)
+	log.Debug("Adding unix socket path %s", expandedPath)
+
+	return landlock.PathAccess(llsys.AccessFSResolveUnix, expandedPath).IgnoreIfMissing()
 }
