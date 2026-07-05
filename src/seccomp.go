@@ -201,6 +201,10 @@ func setupSeccomp(cfg *config) {
 				"swapoff",
 				"swapon",
 
+				// raw I/O port access
+				"iopl",
+				"ioperm",
+
 				// these *could* be used by unprivileged processes, but most distros
 				// disable that
 				"bpf",
