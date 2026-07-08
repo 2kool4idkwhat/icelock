@@ -89,14 +89,12 @@ func setupLandlock(cfg *config) {
 		}
 	}
 
-	if cfg.IpcScoped {
-		if cfg.SignalsScoped {
-			scopedAccess = scopedAccess | llsys.ScopeSignal
-		}
+	if cfg.SignalsScoped {
+		scopedAccess = scopedAccess | llsys.ScopeSignal
+	}
 
-		if cfg.AbstractUnixScoped {
-			scopedAccess = scopedAccess | llsys.ScopeAbstractUnixSocket
-		}
+	if cfg.AbstractUnixScoped {
+		scopedAccess = scopedAccess | llsys.ScopeAbstractUnixSocket
 	}
 
 	llConfig, err := landlock.NewConfig(handledAccessFs, handledAccessNet, scopedAccess)

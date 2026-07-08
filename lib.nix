@@ -36,7 +36,6 @@ in
       connectTcp ? [ ],
       connectTcpAll ? false,
 
-      scopeIpc ? true,
       signals ? false,
       abstractUnixSockets ? false,
 
@@ -60,8 +59,6 @@ in
     assert isBool restrictNet;
     assert isList bindTcp;
     assert isList connectTcp;
-
-    assert isBool scopeIpc;
 
     assert isBool seccompEnable;
     assert isList socketFamilies;
@@ -91,7 +88,6 @@ in
           (portListOpt "--connect-tcp" connectTcp)
           (boolOpt "--connect-tcp-all" connectTcpAll)
 
-          (boolOpt "--unscoped-ipc" (!scopeIpc))
           (boolOpt "--signals" signals)
           (boolOpt "--abstract-unix" abstractUnixSockets)
 

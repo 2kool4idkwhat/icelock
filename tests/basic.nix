@@ -174,7 +174,6 @@ pkgs.testers.runNixOSTest {
     ${failCmd "${./signal.sh}"}
     ${failCmd "${./signal.sh} --abstract-unix"}
     ${succeedCmd "${./signal.sh} --signals"}
-    ${succeedCmd "${./signal.sh} --unscoped-ipc"}
 
     ### SECCOMP - SOCKETS ###
     ${fail "--rx / -- socket-test --af inet"}

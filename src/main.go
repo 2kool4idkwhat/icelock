@@ -31,7 +31,6 @@ const (
 	flagConnectTCP      = "connect-tcp"
 	flagConnectTCPAll   = "connect-tcp-all"
 
-	flagUnscopedIpc  = "unscoped-ipc"
 	flagSignals      = "signals"
 	flagAbstractUnix = "abstract-unix"
 
@@ -75,7 +74,6 @@ type config struct {
 	NetConnectTCP    []int
 	NetConnectTCPAll bool
 
-	IpcScoped          bool
 	SignalsScoped      bool
 	AbstractUnixScoped bool
 
@@ -194,11 +192,6 @@ func main() {
 			},
 
 			&cli.BoolFlag{
-				Name:     flagUnscopedIpc,
-				Usage:    "don't scope IPC",
-				Category: categoryIpcScoping,
-			},
-			&cli.BoolFlag{
 				Name:     flagSignals,
 				Usage:    "don't scope signals",
 				Category: categoryIpcScoping,
@@ -288,7 +281,6 @@ func main() {
 				NetConnectTCP:    cmd.IntSlice(flagConnectTCP),
 				NetConnectTCPAll: cmd.Bool(flagConnectTCPAll),
 
-				IpcScoped:          !cmd.Bool(flagUnscopedIpc),
 				SignalsScoped:      !cmd.Bool(flagSignals),
 				AbstractUnixScoped: !cmd.Bool(flagAbstractUnix),
 
