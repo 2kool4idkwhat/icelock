@@ -34,19 +34,22 @@ You can also run `go build -v` in the `src/` dir, but then you'll need to ensure
 
 ### Landrun
 
-[Landrun] was the initial inspiration for icelock, and what got me interested in Landlock in the first place. That being said, there are some major differences. As of landrun version 0.1.15:
-
-- landrun doesn't restrict unix sockets, which allows for [sandbox escape](https://github.com/Zouuup/landrun/issues/43)
+[Landrun] was the initial inspiration for icelock, and what got me interested in Landlock in the first place. That being said, there are some major differences. As of landrun version 0.1.17:
 
 - landrun only passes the env vars that you explicitly specify, which makes it very annoying to use
-
-- icelock has support for Landlock features up to ABI v9, while landrun only up to v5
 
 - icelock uses seccomp (in addition to Landlock)
 
 - icelock drops capabilities by default
 
 - landrun has flags for automatically adding the app executable/libraries to RX paths
+
+- various flags are subtly different, for example:
+  - in icelock, the read/execute flag is `--rx`. In landrun, it's `--rox`
+
+  - icelock doesn't have a `--rwx` flag
+
+  - in icelock, the `--unix` flag only grants the `RESOLVE_UNIX` access right. In landrun, `--unix` also grants `READ_FILE` and `READ_DIR`
 
 ### Island
 
