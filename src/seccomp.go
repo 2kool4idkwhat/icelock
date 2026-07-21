@@ -62,12 +62,15 @@ func setupSeccomp(cfg *config) {
 			},
 		}
 
-		var sysKeyring, sysMq, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
+		var sysKeyring, sysDebug, sysMq, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
 
 		for _, group := range cfg.Syscalls {
 			switch group {
 			case "keyring":
 				sysKeyring = true
+
+			case "debug":
+				sysDebug = true
 
 			case "mq":
 				sysMq = true
@@ -99,6 +102,18 @@ func setupSeccomp(cfg *config) {
 				"add_key",
 				"keyctl",
 				"request_key",
+			)
+		}
+
+		// most apps shouldn't be able to use features intended for debuggers
+		if !sysDebug {
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
+				// performance monitoring
+				"perf_event_open",
+
+				// landlock and yama both already prevent ptracing processes outside the
+				// sandbox, but this prevents ptracing processes WITHIN the sandbox
+				"ptrace",
 			)
 		}
 
@@ -208,7 +223,6 @@ func setupSeccomp(cfg *config) {
 				// these *could* be used by unprivileged processes, but most distros
 				// disable that
 				"bpf",
-				"perf_event_open",
 				"syslog", // dmesg
 
 				// misc

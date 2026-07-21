@@ -26,6 +26,7 @@ pkgs.testers.runNixOSTest {
         (pkgs.callPackage ./sockets { })
 
         pkgs.keyutils
+        pkgs.strace
       ];
 
       # use latest kernel for LANDLOCK_ACCESS_FS_RESOLVE_UNIX (added in 7.1)
@@ -191,6 +192,13 @@ pkgs.testers.runNixOSTest {
 
     ${succeedCmd "${./keyring.sh} --syscalls keyring"}
     ${succeedCmd "${./keyring.sh} --no-seccomp"}
+
+    ### SECCOMP - DEBUG SYSCALLS ###
+    ${fail "--unrestricted-fs -- strace pwd"}
+    ${fail "--unrestricted-fs --syscalls keyring -- strace pwd"}
+
+    ${succeed "--unrestricted-fs --syscalls debug -- strace pwd"}
+    ${succeed "--unrestricted-fs --no-seccomp -- strace pwd"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
     ${succeedCmd "mkdir -p /tmp/chmod-test"}

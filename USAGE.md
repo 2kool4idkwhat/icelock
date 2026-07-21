@@ -58,7 +58,7 @@ To allow the app to use io_uring use `--io-uring`. WARNING: this may allow bypas
 
 ## Seccomp
 
-In addition to syscall groups mentioned in previous sections, keyring, emulation, and some privileged syscalls are also blocked. You can allow them with `--syscalls=keyring,privileged,emulation`
+In addition to syscall groups mentioned in previous sections, keyring, debugging, emulation, and some privileged syscalls are also blocked. You can allow them with `--syscalls=keyring,debug,privileged,emulation`
 
 TIOCSTI and TIOCLINUX are also blocked since there's no legitimate reason to use them and they've been the source of many vulnerabilities
 
