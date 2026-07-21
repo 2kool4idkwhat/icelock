@@ -161,13 +161,13 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "fail" ""}
     ${tcpBindTest "fail" "--af inet"}
     ${tcpBindTest "fail" "--no-seccomp"}
-    ${tcpBindTest "fail" "--bind-tcp 8000"}
-    ${tcpBindTest "fail" "--af inet --connect-tcp 8000"}
-    ${tcpBindTest "fail" "--af inet --connect-tcp-all"}
+    ${tcpBindTest "fail" "--bind 8000"}
+    ${tcpBindTest "fail" "--af inet --connect 8000"}
+    ${tcpBindTest "fail" "--af inet --connect-all"}
 
-    ${tcpBindTest "succeed" "--af inet --bind-tcp 8000"}
-    ${tcpBindTest "succeed" "--af inet --bind-tcp-all"}
-    ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
+    ${tcpBindTest "succeed" "--af inet --bind 8000"}
+    ${tcpBindTest "succeed" "--af inet --bind-all"}
+    ${tcpBindTest "succeed" "--no-seccomp --bind 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
     ### IPC - SIGNALS ###

@@ -12,7 +12,7 @@
 
     ro = [ "/etc" ];
 
-    connectTcp = [ 443 ];
+    connect = [ 443 ];
 
     socketFamilies = [ "inet" ];
 

@@ -26,10 +26,10 @@ const (
 	flagUnix           = "unix"
 
 	flagUnrestrictedNet = "unrestricted-net"
-	flagBindTCP         = "bind-tcp"
-	flagBindTCPAll      = "bind-tcp-all"
-	flagConnectTCP      = "connect-tcp"
-	flagConnectTCPAll   = "connect-tcp-all"
+	flagBind            = "bind"
+	flagBindAll         = "bind-all"
+	flagConnect         = "connect"
+	flagConnectAll      = "connect-all"
 
 	flagSignals      = "signals"
 	flagAbstractUnix = "abstract-unix"
@@ -68,11 +68,11 @@ type config struct {
 	FsRW         []string
 	FsUnix       []string
 
-	NetRestricted    bool
-	NetBindTCP       []int
-	NetBindTCPAll    bool
-	NetConnectTCP    []int
-	NetConnectTCPAll bool
+	NetRestricted bool
+	NetBind       []int
+	NetBindAll    bool
+	NetConnect    []int
+	NetConnectAll bool
 
 	SignalsScoped      bool
 	AbstractUnixScoped bool
@@ -171,22 +171,22 @@ func main() {
 				Category: categoryNetwork,
 			},
 			&cli.IntSliceFlag{
-				Name:     flagBindTCP,
+				Name:     flagBind,
 				Usage:    "allow binding to this TCP port",
 				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
-				Name:     flagBindTCPAll,
+				Name:     flagBindAll,
 				Usage:    "allow binding to all TCP ports",
 				Category: categoryNetwork,
 			},
 			&cli.IntSliceFlag{
-				Name:     flagConnectTCP,
+				Name:     flagConnect,
 				Usage:    "allow connecting to this TCP port",
 				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
-				Name:     flagConnectTCPAll,
+				Name:     flagConnectAll,
 				Usage:    "allow connecting to all TCP ports",
 				Category: categoryNetwork,
 			},
@@ -275,11 +275,11 @@ func main() {
 				FsRW:         cmd.StringSlice(flagRW),
 				FsUnix:       cmd.StringSlice(flagUnix),
 
-				NetRestricted:    !cmd.Bool(flagUnrestrictedNet),
-				NetBindTCP:       cmd.IntSlice(flagBindTCP),
-				NetBindTCPAll:    cmd.Bool(flagBindTCPAll),
-				NetConnectTCP:    cmd.IntSlice(flagConnectTCP),
-				NetConnectTCPAll: cmd.Bool(flagConnectTCPAll),
+				NetRestricted: !cmd.Bool(flagUnrestrictedNet),
+				NetBind:       cmd.IntSlice(flagBind),
+				NetBindAll:    cmd.Bool(flagBindAll),
+				NetConnect:    cmd.IntSlice(flagConnect),
+				NetConnectAll: cmd.Bool(flagConnectAll),
 
 				SignalsScoped:      !cmd.Bool(flagSignals),
 				AbstractUnixScoped: !cmd.Bool(flagAbstractUnix),

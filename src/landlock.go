@@ -66,10 +66,10 @@ func setupLandlock(cfg *config) {
 	}
 
 	if cfg.NetRestricted {
-		if !cfg.NetBindTCPAll {
+		if !cfg.NetBindAll {
 			handledAccessNet = handledAccessNet | llsys.AccessNetBindTCP
 
-			for _, port := range cfg.NetBindTCP {
+			for _, port := range cfg.NetBind {
 				log.Debug("Allowing binding to TCP port %v", port)
 
 				netRule := landlock.BindTCP(uint16(port))
@@ -77,10 +77,10 @@ func setupLandlock(cfg *config) {
 			}
 		}
 
-		if !cfg.NetConnectTCPAll {
+		if !cfg.NetConnectAll {
 			handledAccessNet = handledAccessNet | llsys.AccessNetConnectTCP
 
-			for _, port := range cfg.NetConnectTCP {
+			for _, port := range cfg.NetConnect {
 				log.Debug("Allowing connecting to TCP port %v", port)
 
 				netRule := landlock.ConnectTCP(uint16(port))

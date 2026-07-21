@@ -31,10 +31,10 @@ in
       unix ? [ ],
 
       restrictNet ? true,
-      bindTcp ? [ ],
-      bindTcpAll ? false,
-      connectTcp ? [ ],
-      connectTcpAll ? false,
+      bind ? [ ],
+      bindAll ? false,
+      connect ? [ ],
+      connectAll ? false,
 
       signals ? false,
       abstractUnixSockets ? false,
@@ -57,8 +57,8 @@ in
     assert isList unix;
 
     assert isBool restrictNet;
-    assert isList bindTcp;
-    assert isList connectTcp;
+    assert isList bind;
+    assert isList connect;
 
     assert isBool seccompEnable;
     assert isList socketFamilies;
@@ -83,10 +83,10 @@ in
           (listOpt "--unix" unix)
 
           (boolOpt "--unrestricted-net" (!restrictNet))
-          (portListOpt "--bind-tcp" bindTcp)
-          (boolOpt "--bind-tcp-all" bindTcpAll)
-          (portListOpt "--connect-tcp" connectTcp)
-          (boolOpt "--connect-tcp-all" connectTcpAll)
+          (portListOpt "--bind" bind)
+          (boolOpt "--bind-all" bindAll)
+          (portListOpt "--connect" connect)
+          (boolOpt "--connect-all" connectAll)
 
           (boolOpt "--signals" signals)
           (boolOpt "--abstract-unix" abstractUnixSockets)
