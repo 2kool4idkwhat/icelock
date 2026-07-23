@@ -17,13 +17,19 @@ const (
 	accessFSRead landlock.AccessFSSet = llsys.AccessFSReadFile | llsys.AccessFSReadDir
 
 	// The set of access rights associated with write access
-	accessFSWrite landlock.AccessFSSet = llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSRemoveDir | llsys.AccessFSRemoveFile | llsys.AccessFSMakeChar | llsys.AccessFSMakeDir | llsys.AccessFSMakeReg | llsys.AccessFSMakeSock | llsys.AccessFSMakeFifo | llsys.AccessFSMakeBlock | llsys.AccessFSMakeSym | llsys.AccessFSRefer | llsys.AccessFSIoctlDev
+	accessFSWrite landlock.AccessFSSet = llsys.AccessFSWriteFile | llsys.AccessFSTruncate | llsys.AccessFSRemoveDir | llsys.AccessFSRemoveFile | llsys.AccessFSMakeDir | llsys.AccessFSMakeReg | llsys.AccessFSMakeSock | llsys.AccessFSMakeFifo | llsys.AccessFSMakeSym | llsys.AccessFSRefer | llsys.AccessFSIoctlDev
+
+	// The set of access rights associated with device node creation
+	//
+	// Not included in accessFSWrite because it's unnecessary in most cases
+	// since creating device nodes also requires CAP_MKNOD
+	accessFSMakeDev landlock.AccessFSSet = llsys.AccessFSMakeChar | llsys.AccessFSMakeBlock
 
 	// The set of access rights associated with read/write access
 	accessFSReadWrite landlock.AccessFSSet = accessFSRead | accessFSWrite
 
 	// The full set of filesystem access rights
-	accessFSAll landlock.AccessFSSet = accessFSReadWrite | llsys.AccessFSExecute | llsys.AccessFSResolveUnix
+	accessFSAll landlock.AccessFSSet = accessFSReadWrite | accessFSMakeDev | llsys.AccessFSExecute | llsys.AccessFSResolveUnix
 )
 
 var home string

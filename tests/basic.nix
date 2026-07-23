@@ -148,6 +148,14 @@ pkgs.testers.runNixOSTest {
     ${succeed "--rx /nix --unix /run/dbus -- busctl"}
     ${succeed "--rx /nix --unix /run/dbus/system_bus_socket -- busctl"}
 
+    ### FS - MAKE DEV ###
+    # the --rw flag no longer includes LANDLOCK_ACCESS_FS_MAKE_CHAR and
+    # LANDLOCK_ACCESS_FS_MAKE_BLOCK, so creating device nodes should always
+    # fail if FS access is restricted
+    # (these vm tests run as root so we have CAP_MKNOD)
+    ${fail "--rx / --rw / --keep-caps -- mknod /dev/testnull c 1 3"}
+    ${succeed "--unrestricted-fs --keep-caps -- mknod /dev/testnull c 1 3"}
+
     ### FS - INVALID PATHS ###
     # icelock should ignore specified paths that don't exist
     ${succeed "--rx /nix --rx /aaa -- pwd"}
