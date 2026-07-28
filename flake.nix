@@ -20,7 +20,7 @@
         let
           pkgs = nixpkgsFor.${system};
 
-          makeIcelockWrapper = self.outputs.lib.${system}.makeIcelockWrapper;
+          wrap = self.outputs.lib.makeIcelockWrapper pkgs;
         in
         {
           icelock = pkgs.callPackage ./package.nix { };
@@ -29,16 +29,18 @@
           mdwe-test = pkgs.callPackage ./tests/mdwe { };
           socket-test = pkgs.callPackage ./tests/sockets { };
         }
-        // (import ./example.nix { inherit pkgs makeIcelockWrapper; })
+        // (import ./example.nix { inherit pkgs wrap; })
       );
 
-      lib = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        import ./lib.nix { inherit pkgs; }
-      );
+      lib.makeIcelockWrapper =
+        pkgs: module:
+        (pkgs.lib.evalModules {
+          modules = [
+            ./module.nix
+            module
+          ];
+          specialArgs = { inherit pkgs; };
+        }).config.app.finalPackage;
 
       devShells = forAllSystems (
         system:

@@ -1,30 +1,30 @@
-{ pkgs, makeIcelockWrapper, ... }:
+{ pkgs, wrap, ... }:
 {
 
-  simple = makeIcelockWrapper {
-    package = pkgs.eza;
+  simple = wrap {
+    app.package = pkgs.eza;
 
-    ro = [ "/" ];
+    fs.ro = [ "/" ];
   };
 
-  limited-network = makeIcelockWrapper {
-    package = pkgs.curl;
+  limited-network = wrap {
+    app.package = pkgs.curl;
 
-    ro = [ "/etc" ];
+    fs.ro = [ "/etc" ];
 
-    connect = [ 443 ];
+    net.connect = [ 443 ];
 
-    socketFamilies = [ "inet" ];
+    seccomp.socketFamilies = [ "inet" ];
 
     mdwe = true;
   };
 
-  gnome-calculator = makeIcelockWrapper {
-    package = pkgs.gnome-calculator;
+  gnome-calculator = wrap {
+    app.package = pkgs.gnome-calculator;
 
-    extraBinPaths = [ "/libexec/gnome-calculator-search-provider" ];
+    app.extraBinPaths = [ "/libexec/gnome-calculator-search-provider" ];
 
-    restrictFs = false;
+    fs.restrict = false;
   };
 
 }
