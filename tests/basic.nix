@@ -198,12 +198,12 @@ pkgs.testers.runNixOSTest {
     ${failCmd "${./keyring.sh}"}
     ${failCmd "${./keyring.sh} --syscalls chmod"}
 
-    ${succeedCmd "${./keyring.sh} --syscalls keyring"}
+    ${succeedCmd "${./keyring.sh} --keyring"}
     ${succeedCmd "${./keyring.sh} --no-seccomp"}
 
     ### SECCOMP - DEBUG SYSCALLS ###
     ${fail "--unrestricted-fs -- strace pwd"}
-    ${fail "--unrestricted-fs --syscalls keyring -- strace pwd"}
+    ${fail "--unrestricted-fs --syscalls chmod -- strace pwd"}
 
     ${succeed "--unrestricted-fs --syscalls debug -- strace pwd"}
     ${succeed "--unrestricted-fs --no-seccomp -- strace pwd"}
@@ -213,7 +213,7 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- chmod +r /tmp/chmod-test"}
     ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmod-test"}
-    ${fail "--rx / --syscalls keyring -- chmod +r /tmp/chmod-test"}
+    ${fail "--rx / --syscalls debug -- chmod +r /tmp/chmod-test"}
 
     ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmod-test"}
     ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmod-test"}
@@ -224,7 +224,7 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- chown root /tmp/chown-test"}
     ${fail "--rx / --rw /tmp -- chown root /tmp/chown-test"}
-    ${fail "--rx / --syscalls keyring -- chown root /tmp/chown-test"}
+    ${fail "--rx / --syscalls debug -- chown root /tmp/chown-test"}
 
     ${succeed "--rx / --syscalls chown -- chown root /tmp/chown-test"}
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}

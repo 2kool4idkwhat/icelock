@@ -44,6 +44,9 @@ const (
 	flagAF              = "af"
 	flagUserns          = "userns"
 	flagIoUring         = "io-uring"
+	flagKeyring         = "keyring"
+	flagPosixMQ         = "posix-mq"
+	flagSysvMQ          = "sysv-mq"
 
 	flagKeepCaps = "keep-caps"
 
@@ -87,6 +90,9 @@ type config struct {
 	SocketFamilies  []string
 	UserNamespaces  bool
 	IoUring         bool
+	Keyring         bool
+	PosixMQ         bool
+	SysvMQ          bool
 
 	KeepCaps bool
 
@@ -222,7 +228,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:     flagSyscalls,
-				Usage:    `extra allowed syscall groups ("keyring", "debug", "mq", "chmod", "chown", "xattr", "emulation", "privileged")`,
+				Usage:    `extra allowed syscall groups ("debug", "chmod", "chown", "xattr", "emulation", "privileged")`,
 				Category: categorySeccomp,
 			},
 			&cli.StringSliceFlag{
@@ -238,6 +244,21 @@ func main() {
 			&cli.BoolFlag{
 				Name:     flagIoUring,
 				Usage:    "allow using io_uring",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagKeyring,
+				Usage:    "allow keyring syscalls",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagPosixMQ,
+				Usage:    "allow POSIX message queue syscalls",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagSysvMQ,
+				Usage:    "allow System V message queue syscalls",
 				Category: categorySeccomp,
 			},
 
@@ -294,6 +315,9 @@ func main() {
 				SocketFamilies:  cmd.StringSlice(flagAF),
 				UserNamespaces:  cmd.Bool(flagUserns),
 				IoUring:         cmd.Bool(flagIoUring),
+				Keyring:         cmd.Bool(flagKeyring),
+				PosixMQ:         cmd.Bool(flagPosixMQ),
+				SysvMQ:          cmd.Bool(flagSysvMQ),
 
 				KeepCaps: cmd.Bool(flagKeepCaps),
 

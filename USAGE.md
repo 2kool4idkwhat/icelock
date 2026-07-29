@@ -28,41 +28,7 @@ For limited network access use `--af inet` to allow AF_INET/AF_INET6 sockets and
 
 If you need obscure socket families use `--af other`
 
-## IPC
-
-### Signals
-
-To allow the app to send signals to processes outside the sandbox use `--signals`
-
-### Abstract unix sockets
-
-To allow connecting to abstract unix sockets created outside the sandbox use `--abstract-unix`
-
-### Message queues
-
-To allow POSIX and System V message queues use `--syscalls=mq`
-
-## Capabilities
-
-By default, icelock drops all capabilities (if it has any). To keep them use `--keep-caps`. WARNING: this is dangerous since capabilities are inherently dangerous, and some of them may allow sandbox escape
-
-## User namespaces
-
-To allow the app to create user namespaces use `--userns`
-
-NOTE: as mentioned in the filesystem section, if filesystem access is restricted then the app effectively won't be able to use mount namespaces
-
-## io_uring
-
-To allow the app to use io_uring use `--io-uring`. WARNING: this may allow bypassing some restrictions
-
-## Seccomp
-
-In addition to syscall groups mentioned in previous sections, keyring, debugging, emulation, and some privileged syscalls are also blocked. You can allow them with `--syscalls=keyring,debug,privileged,emulation`
-
-TIOCSTI and TIOCLINUX are also blocked since there's no legitimate reason to use them and they've been the source of many vulnerabilities
-
-You can disable seccomp with `--no-seccomp`
+WARNING: if io_uring is allowed, socket family restrictions can be bypassed
 
 ## MDWE (Memory-Deny-Write-Execute)
 

@@ -128,6 +128,18 @@ in
         type = bool;
         default = false;
       };
+      keyring = mkOption {
+        type = bool;
+        default = false;
+      };
+      posixMessageQueues = mkOption {
+        type = bool;
+        default = false;
+      };
+      sysvMessageQueues = mkOption {
+        type = bool;
+        default = false;
+      };
     };
 
     mdwe = mkOption {
@@ -166,6 +178,9 @@ in
           (listOpt "--syscalls" config.seccomp.syscalls)
           (boolOpt "--userns" config.seccomp.userNamespaces)
           (boolOpt "--io-uring" config.seccomp.ioUring)
+          (boolOpt "--keyring" config.seccomp.keyring)
+          (boolOpt "--posix-mq" config.seccomp.posixMessageQueues)
+          (boolOpt "--sysv-mq" config.seccomp.sysvMessageQueues)
 
           (boolOpt "--mdwe" config.mdwe)
           (boolOpt "--keep-caps" config.keepCaps)

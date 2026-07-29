@@ -62,18 +62,12 @@ func setupSeccomp(cfg *config) {
 			},
 		}
 
-		var sysKeyring, sysDebug, sysMq, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
+		var sysDebug, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
 
 		for _, group := range cfg.Syscalls {
 			switch group {
-			case "keyring":
-				sysKeyring = true
-
 			case "debug":
 				sysDebug = true
-
-			case "mq":
-				sysMq = true
 
 			case "chmod":
 				sysChmod = true
@@ -95,16 +89,6 @@ func setupSeccomp(cfg *config) {
 			}
 		}
 
-		// blocking kernel keyring access would have prevented CVE-2024-42318 (landlock bypass),
-		// and most things don't need it anyway
-		if !sysKeyring {
-			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
-				"add_key",
-				"keyctl",
-				"request_key",
-			)
-		}
-
 		// most apps shouldn't be able to use features intended for debuggers
 		if !sysDebug {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
@@ -114,28 +98,6 @@ func setupSeccomp(cfg *config) {
 				// landlock and yama both already prevent ptracing processes outside the
 				// sandbox, but this prevents ptracing processes WITHIN the sandbox
 				"ptrace",
-			)
-		}
-
-		// block message queues since that's ipc which landlock can't (fully) restrict yet,
-		// and they're very rarely used anyway
-		// see https://github.com/landlock-lsm/linux/issues/29
-		// and https://github.com/landlock-lsm/linux/issues/30
-		if !sysMq {
-			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
-				// posix
-				"mq_getsetattr",
-				"mq_notify",
-				"mq_open",
-				"mq_timedreceive",
-				"mq_timedsend",
-				"mq_unlink",
-
-				// system v
-				"msgget",
-				"msgsnd",
-				"msgrcv",
-				"msgctl",
 			)
 		}
 
@@ -280,6 +242,41 @@ func setupSeccomp(cfg *config) {
 				"io_uring_enter",
 				"io_uring_register",
 				"io_uring_setup",
+			)
+		}
+
+		// most apps don't need to access the kernel keyring
+		if !cfg.Keyring {
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
+				"add_key",
+				"keyctl",
+				"request_key",
+			)
+		}
+
+		// block posix message queues since that's ipc which landlock can't (fully)
+		// restrict yet, and they're very rarely used anyway
+		// see https://github.com/landlock-lsm/linux/issues/29
+		if !cfg.PosixMQ {
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
+				"mq_getsetattr",
+				"mq_notify",
+				"mq_open",
+				"mq_timedreceive",
+				"mq_timedsend",
+				"mq_unlink",
+			)
+		}
+
+		// block sysv message queues since that's ipc which landlock can't restrict yet,
+		// and they're very rarely used anyway
+		// see https://github.com/landlock-lsm/linux/issues/30
+		if !cfg.SysvMQ {
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
+				"msgget",
+				"msgsnd",
+				"msgrcv",
+				"msgctl",
 			)
 		}
 
