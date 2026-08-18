@@ -4,31 +4,48 @@
 
 # icelock 🧊🔒
 
-Icelock is a small CLI tool for restricting programs with [Landlock] (and seccomp). You can use icelock to run programs with reduced privileges
+Icelock is a small Linux CLI tool for restricting programs with [Landlock] (and seccomp). You can use icelock to run programs with reduced privileges
 
-Run `icelock --help` for a list of options, and see [USAGE.md](./USAGE.md) for details
-
-## Compiling
-
-Just run `nix build`
-
-You can also run `go build -v` in the `src/` dir, but then you'll need to ensure that libseccomp and pkg-config are installed
+Run `icelock --help` for a list of options
 
 ## Current limitations (non-exhaustive)
 
 - execute permission only covers direct file execution, so [it can be bypassed](https://github.com/landlock-lsm/linux/issues/37)
 
-- if filesystem access is restricted the app can't modify filesystem topology, which breaks bubblewrap and other sandboxing solutions that use mount namespaces
+- if filesystem access is restricted, the sandboxed processes can't modify the filesystem topology of their mount namespace
+  - this breaks bubblewrap
 
-- icelock doesn't stop the app from using too much resources (memory, CPU time, etc), so it won't protect you from eg. a fork bomb
+- icelock doesn't stop the sandboxed processes from using too much resources (memory, CPU time, etc), so it won't protect you from eg. a fork bomb
 
-- [landlock TCP port restrictions don't apply to Multipath-TCP](https://github.com/landlock-lsm/linux/issues/54)
+- [port restrictions don't apply to Multipath-TCP](https://github.com/landlock-lsm/linux/issues/54)
 
 - reading file metadata (`stat(2)`) isn't restricted
 
 - file locking (`flock(2)`) isn't restricted
 
 - changing file access/modify times (`utime(2)`) isn't restricted
+
+## Notes
+
+The final allowed filesystem access is the sum of all rules, so if you run `icelock --rw=/aaa --rx=/aaa/bbb/ccc` then the sandbox will have write access to `/aaa/bbb/ccc` because that path is below `/aaa`
+
+Under the hood filesystem rules are created using file descriptors (not path strings), so to allow access to a path that might not exist you have to either:
+
+1. create it before running icelock (ie. `mkdir -p` or `touch`)
+
+2. allow access to the dir above it instead (but that will obviously weaken the sandbox)
+
+### Kernel compatibility
+
+Icelock currently targets Landlock v9 ABI
+
+You can use the `--best-effort` flag to run icelock on older kernels, but this will weaken the sandbox
+
+Landlock ABI version | Minimum upstream kernel version | New features
+---------------------|---------------------------------|-------------
+9  | 7.1  | pathname unix socket restrictions (**prevents sandbox escape via D-bus**)
+7  | 6.15 | audit logging
+6  | 6.12 | signal scoping, abstract unix socket scoping
 
 ## Related projects
 
