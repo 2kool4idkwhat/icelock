@@ -120,6 +120,10 @@ in
         default = [ ];
       };
 
+      blockMfdExec = mkOption {
+        type = bool;
+        default = false;
+      };
       userNamespaces = mkOption {
         type = bool;
         default = false;
@@ -176,6 +180,7 @@ in
           (boolOpt "--no-seccomp" (!config.seccomp.enable))
           (listOpt "--af" config.seccomp.socketFamilies)
           (listOpt "--syscalls" config.seccomp.syscalls)
+          (boolOpt "--block-mfd-exec" config.seccomp.blockMfdExec)
           (boolOpt "--userns" config.seccomp.userNamespaces)
           (boolOpt "--io-uring" config.seccomp.ioUring)
           (boolOpt "--keyring" config.seccomp.keyring)

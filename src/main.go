@@ -42,6 +42,7 @@ const (
 	flagSeccompPrintBPF = "seccomp-print-bpf"
 	flagSyscalls        = "syscalls"
 	flagAF              = "af"
+	flagBlockMfdExec    = "block-mfd-exec"
 	flagUserns          = "userns"
 	flagIoUring         = "io-uring"
 	flagKeyring         = "keyring"
@@ -56,7 +57,7 @@ const (
 const (
 	categoryFilesystem = "Filesystem"
 	categoryNetwork    = "Network"
-	categoryIpcScoping = "IPC Scoping"
+	categoryScope      = "Scope"
 	categoryAudit      = "Audit Subsystem Logging"
 	categorySeccomp    = "Seccomp"
 )
@@ -88,6 +89,7 @@ type config struct {
 	SeccompPrintBPF bool
 	Syscalls        []string
 	SocketFamilies  []string
+	BlockMfdExec    bool
 	UserNamespaces  bool
 	IoUring         bool
 	Keyring         bool
@@ -200,12 +202,12 @@ func main() {
 			&cli.BoolFlag{
 				Name:     flagSignals,
 				Usage:    "don't scope signals",
-				Category: categoryIpcScoping,
+				Category: categoryScope,
 			},
 			&cli.BoolFlag{
 				Name:     flagAbstractUnix,
 				Usage:    "don't scope abstract unix sockets",
-				Category: categoryIpcScoping,
+				Category: categoryScope,
 			},
 
 			&cli.BoolFlag{
@@ -234,6 +236,11 @@ func main() {
 			&cli.StringSliceFlag{
 				Name:     flagAF,
 				Usage:    `allowed socket address families ("netlink", "inet", "other")`,
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagBlockMfdExec,
+				Usage:    "block creating memfds with MFD_EXEC (but not implicitly executable memfds)",
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
@@ -313,6 +320,7 @@ func main() {
 				SeccompPrintBPF: cmd.Bool(flagSeccompPrintBPF),
 				Syscalls:        cmd.StringSlice(flagSyscalls),
 				SocketFamilies:  cmd.StringSlice(flagAF),
+				BlockMfdExec:    cmd.Bool(flagBlockMfdExec),
 				UserNamespaces:  cmd.Bool(flagUserns),
 				IoUring:         cmd.Bool(flagIoUring),
 				Keyring:         cmd.Bool(flagKeyring),

@@ -194,6 +194,19 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
+		// TODO: can we block implict MFD_EXEC when vm.memfd_noexec=0 ?
+		// (without hardcoding every flag combination)
+		if cfg.BlockMfdExec {
+			rules = append(rules, seccompRule{
+				Action:   actionEPERM,
+				Syscall:  unix.SYS_MEMFD_CREATE,
+				Arg:      1,
+				Op:       seccomp.CompareMaskedEqual,
+				OpValue1: unix.MFD_EXEC,
+				OpValue2: unix.MFD_EXEC,
+			})
+		}
+
 		if !cfg.UserNamespaces {
 			rules = append(rules,
 				// TODO: test on arm64 (since apparently the clone() syscall args order is

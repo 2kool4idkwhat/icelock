@@ -27,6 +27,7 @@
           default = self.outputs.packages.${system}.icelock;
 
           mdwe-test = pkgs.callPackage ./tests/mdwe { };
+          memfd-test = pkgs.callPackage ./tests/memfd { };
           socket-test = pkgs.callPackage ./tests/sockets { };
         }
         // (import ./example.nix { inherit pkgs wrap; })
@@ -69,7 +70,6 @@
         in
         {
           basic = import ./tests/basic.nix { inherit pkgs lib; };
-          landlock-disabled = import ./tests/landlock-disabled.nix { inherit pkgs lib; };
         }
       );
 

@@ -23,6 +23,7 @@ pkgs.testers.runNixOSTest {
       environment.systemPackages = [
         (pkgs.callPackage ../package.nix { })
         (pkgs.callPackage ./mdwe { })
+        (pkgs.callPackage ./memfd { })
         (pkgs.callPackage ./sockets { })
 
         pkgs.keyutils
@@ -31,6 +32,10 @@ pkgs.testers.runNixOSTest {
 
       # use latest kernel for LANDLOCK_ACCESS_FS_RESOLVE_UNIX (added in 7.1)
       boot.kernelPackages = pkgs.linuxPackages_latest;
+
+      ### disable some unneeded stuff to reduce closure size ###
+      documentation.man.enable = false;
+      documentation.doc.enable = false;
     };
 
   testScript = ''
@@ -193,6 +198,19 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- socket-test --af vsock"}
     ${succeed "--rx / --af=other -- socket-test --af vsock"}
+
+    ### SECCOMP - MEMFDS ###
+
+    # implicitly executable
+    ${succeed "--rx / --block-mfd-exec -- memfd-test"}
+
+    # explicitly executable
+    ${succeed "--rx / -- memfd-test --exec"}
+    ${fail "--rx / --block-mfd-exec -- memfd-test --exec"}
+    ${succeed "--rx / --block-mfd-exec --no-seccomp -- memfd-test --exec"}
+
+    # explicitly not executable
+    ${succeed "--rx / --block-mfd-exec -- memfd-test --noexec-seal"}
 
     ### SECCOMP - KEYRING SYSCALLS ###
     ${failCmd "${./keyring.sh}"}
