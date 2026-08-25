@@ -40,14 +40,21 @@ const (
 	flagNoSeccomp       = "no-seccomp"
 	flagSeccompPrint    = "seccomp-print"
 	flagSeccompPrintBPF = "seccomp-print-bpf"
-	flagSyscalls        = "syscalls"
-	flagAF              = "af"
 	flagBlockMfdExec    = "block-mfd-exec"
 	flagUserns          = "userns"
 	flagIoUring         = "io-uring"
+	flagAfNetlink       = "netlink"
+	flagAfInet          = "inet"
+	flagAfObscure       = "obscure-socket-af"
 	flagKeyring         = "keyring"
+	flagDevelSys        = "devel"
+	flagChmod           = "chmod"
+	flagChown           = "chown"
+	flagXattr           = "xattr"
+	flagEmulation       = "emulation"
 	flagPosixMQ         = "posix-mq"
 	flagSysvMQ          = "sysv-mq"
+	flagPrivilegedSys   = "privileged-syscalls"
 
 	flagKeepCaps = "keep-caps"
 
@@ -87,14 +94,21 @@ type config struct {
 	SeccompEnabled  bool
 	SeccompPrint    bool
 	SeccompPrintBPF bool
-	Syscalls        []string
-	SocketFamilies  []string
 	BlockMfdExec    bool
 	UserNamespaces  bool
 	IoUring         bool
+	AfNetlink       bool
+	AfInet          bool
+	AfObscure       bool
 	Keyring         bool
+	DevelSys        bool
+	Chmod           bool
+	Chown           bool
+	Xattr           bool
+	Emulation       bool
 	PosixMQ         bool
 	SysvMQ          bool
+	PrivilegedSys   bool
 
 	KeepCaps bool
 
@@ -225,17 +239,7 @@ func main() {
 
 			&cli.BoolFlag{
 				Name:     flagNoSeccomp,
-				Usage:    "don't filter syscalls",
-				Category: categorySeccomp,
-			},
-			&cli.StringSliceFlag{
-				Name:     flagSyscalls,
-				Usage:    `extra allowed syscall groups ("debug", "chmod", "chown", "xattr", "emulation", "privileged")`,
-				Category: categorySeccomp,
-			},
-			&cli.StringSliceFlag{
-				Name:     flagAF,
-				Usage:    `allowed socket address families ("netlink", "inet", "other")`,
+				Usage:    "don't filter syscalls (dangerous!)",
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
@@ -254,8 +258,48 @@ func main() {
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
+				Name:     flagAfNetlink,
+				Usage:    "allow creating netlink sockets",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagAfInet,
+				Usage:    "allow creating IPv4 and IPv6 sockets",
+				Category: categoryNetwork,
+			},
+			&cli.BoolFlag{
+				Name:     flagAfObscure,
+				Usage:    "allow creating sockets with rarely used address families",
+				Category: categoryNetwork,
+			},
+			&cli.BoolFlag{
 				Name:     flagKeyring,
 				Usage:    "allow keyring syscalls",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagDevelSys,
+				Usage:    "allow debugger/development syscalls (ptrace, perf_event_open)",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagChmod,
+				Usage:    "allow chmod syscalls",
+				Category: categoryFilesystem,
+			},
+			&cli.BoolFlag{
+				Name:     flagChown,
+				Usage:    "allow chown syscalls",
+				Category: categoryFilesystem,
+			},
+			&cli.BoolFlag{
+				Name:     flagXattr,
+				Usage:    "allow xattr write syscalls",
+				Category: categoryFilesystem,
+			},
+			&cli.BoolFlag{
+				Name:     flagEmulation,
+				Usage:    "allow emulation syscalls",
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
@@ -266,6 +310,11 @@ func main() {
 			&cli.BoolFlag{
 				Name:     flagSysvMQ,
 				Usage:    "allow System V message queue syscalls",
+				Category: categorySeccomp,
+			},
+			&cli.BoolFlag{
+				Name:     flagPrivilegedSys,
+				Usage:    "allow privileged syscalls",
 				Category: categorySeccomp,
 			},
 
@@ -318,14 +367,21 @@ func main() {
 				SeccompEnabled:  !cmd.Bool(flagNoSeccomp),
 				SeccompPrint:    cmd.Bool(flagSeccompPrint),
 				SeccompPrintBPF: cmd.Bool(flagSeccompPrintBPF),
-				Syscalls:        cmd.StringSlice(flagSyscalls),
-				SocketFamilies:  cmd.StringSlice(flagAF),
 				BlockMfdExec:    cmd.Bool(flagBlockMfdExec),
 				UserNamespaces:  cmd.Bool(flagUserns),
 				IoUring:         cmd.Bool(flagIoUring),
+				AfNetlink:       cmd.Bool(flagAfNetlink),
+				AfInet:          cmd.Bool(flagAfInet),
+				AfObscure:       cmd.Bool(flagAfObscure),
 				Keyring:         cmd.Bool(flagKeyring),
+				DevelSys:        cmd.Bool(flagDevelSys),
+				Chmod:           cmd.Bool(flagChmod),
+				Chown:           cmd.Bool(flagChown),
+				Xattr:           cmd.Bool(flagXattr),
+				Emulation:       cmd.Bool(flagEmulation),
 				PosixMQ:         cmd.Bool(flagPosixMQ),
 				SysvMQ:          cmd.Bool(flagSysvMQ),
+				PrivilegedSys:   cmd.Bool(flagPrivilegedSys),
 
 				KeepCaps: cmd.Bool(flagKeepCaps),
 

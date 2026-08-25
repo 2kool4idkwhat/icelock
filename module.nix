@@ -106,20 +106,6 @@ in
     };
 
     seccomp = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-      };
-
-      socketFamilies = mkOption {
-        type = listOf str;
-        default = [ ];
-      };
-      syscalls = mkOption {
-        type = listOf str;
-        default = [ ];
-      };
-
       blockMfdExec = mkOption {
         type = bool;
         default = false;
@@ -132,7 +118,39 @@ in
         type = bool;
         default = false;
       };
+      inetSockets = mkOption {
+        type = bool;
+        default = false;
+      };
+      netlinkSockets = mkOption {
+        type = bool;
+        default = false;
+      };
+      obscureSockets = mkOption {
+        type = bool;
+        default = false;
+      };
       keyring = mkOption {
+        type = bool;
+        default = false;
+      };
+      debuggerSyscalls = mkOption {
+        type = bool;
+        default = false;
+      };
+      chmod = mkOption {
+        type = bool;
+        default = false;
+      };
+      chown = mkOption {
+        type = bool;
+        default = false;
+      };
+      xattr = mkOption {
+        type = bool;
+        default = false;
+      };
+      emulation = mkOption {
         type = bool;
         default = false;
       };
@@ -141,6 +159,10 @@ in
         default = false;
       };
       sysvMessageQueues = mkOption {
+        type = bool;
+        default = false;
+      };
+      privilegedSyscalls = mkOption {
         type = bool;
         default = false;
       };
@@ -167,25 +189,31 @@ in
           (listOpt "--rx" config.fs.rx)
           (listOpt "--rw" config.fs.rw)
           (listOpt "--unix" config.fs.unix)
+          (boolOpt "--chmod" config.seccomp.chmod)
+          (boolOpt "--chown" config.seccomp.chown)
+          (boolOpt "--xattr" config.seccomp.xattr)
 
           (boolOpt "--unrestricted-net" (!config.net.restrict))
           (portListOpt "--bind" config.net.bind)
           (boolOpt "--bind-all" config.net.bindAll)
           (portListOpt "--connect" config.net.connect)
           (boolOpt "--connect-all" config.net.connectAll)
+          (boolOpt "--inet" config.seccomp.inetSockets)
+          (boolOpt "--obscure-socket-af" config.seccomp.obscureSockets)
 
           (boolOpt "--signals" config.signals)
           (boolOpt "--abstract-unix" config.abstractUnixSockets)
 
-          (boolOpt "--no-seccomp" (!config.seccomp.enable))
-          (listOpt "--af" config.seccomp.socketFamilies)
-          (listOpt "--syscalls" config.seccomp.syscalls)
           (boolOpt "--block-mfd-exec" config.seccomp.blockMfdExec)
           (boolOpt "--userns" config.seccomp.userNamespaces)
           (boolOpt "--io-uring" config.seccomp.ioUring)
+          (boolOpt "--netlink" config.seccomp.netlinkSockets)
           (boolOpt "--keyring" config.seccomp.keyring)
+          (boolOpt "--devel" config.seccomp.debuggerSyscalls)
+          (boolOpt "--emulation" config.seccomp.emulation)
           (boolOpt "--posix-mq" config.seccomp.posixMessageQueues)
           (boolOpt "--sysv-mq" config.seccomp.sysvMessageQueues)
+          (boolOpt "--privileged-syscalls" config.seccomp.privilegedSyscalls)
 
           (boolOpt "--mdwe" config.mdwe)
           (boolOpt "--keep-caps" config.keepCaps)

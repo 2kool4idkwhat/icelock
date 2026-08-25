@@ -173,14 +173,14 @@ pkgs.testers.runNixOSTest {
 
     ### NET - TCP BIND ###
     ${tcpBindTest "fail" ""}
-    ${tcpBindTest "fail" "--af inet"}
+    ${tcpBindTest "fail" "--inet"}
     ${tcpBindTest "fail" "--no-seccomp"}
     ${tcpBindTest "fail" "--bind 8000"}
-    ${tcpBindTest "fail" "--af inet --connect 8000"}
-    ${tcpBindTest "fail" "--af inet --connect-all"}
+    ${tcpBindTest "fail" "--inet --connect 8000"}
+    ${tcpBindTest "fail" "--inet --connect-all"}
 
-    ${tcpBindTest "succeed" "--af inet --bind 8000"}
-    ${tcpBindTest "succeed" "--af inet --bind-all"}
+    ${tcpBindTest "succeed" "--inet --bind 8000"}
+    ${tcpBindTest "succeed" "--inet --bind-all"}
     ${tcpBindTest "succeed" "--no-seccomp --bind 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
@@ -191,13 +191,13 @@ pkgs.testers.runNixOSTest {
 
     ### SECCOMP - SOCKETS ###
     ${fail "--rx / -- socket-test --af inet"}
-    ${succeed "--rx / --af=inet -- socket-test --af inet"}
+    ${succeed "--rx / --inet -- socket-test --af inet"}
 
     ${fail "--rx / -- socket-test --af inet6"}
-    ${succeed "--rx / --af=inet -- socket-test --af inet6"}
+    ${succeed "--rx / --inet -- socket-test --af inet6"}
 
     ${fail "--rx / -- socket-test --af vsock"}
-    ${succeed "--rx / --af=other -- socket-test --af vsock"}
+    ${succeed "--rx / --obscure-socket-af -- socket-test --af vsock"}
 
     ### SECCOMP - MEMFDS ###
 
@@ -214,16 +214,12 @@ pkgs.testers.runNixOSTest {
 
     ### SECCOMP - KEYRING SYSCALLS ###
     ${failCmd "${./keyring.sh}"}
-    ${failCmd "${./keyring.sh} --syscalls chmod"}
-
     ${succeedCmd "${./keyring.sh} --keyring"}
     ${succeedCmd "${./keyring.sh} --no-seccomp"}
 
     ### SECCOMP - DEBUG SYSCALLS ###
     ${fail "--unrestricted-fs -- strace pwd"}
-    ${fail "--unrestricted-fs --syscalls chmod -- strace pwd"}
-
-    ${succeed "--unrestricted-fs --syscalls debug -- strace pwd"}
+    ${succeed "--unrestricted-fs --devel -- strace pwd"}
     ${succeed "--unrestricted-fs --no-seccomp -- strace pwd"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
@@ -231,9 +227,8 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- chmod +r /tmp/chmod-test"}
     ${fail "--rx / --rw /tmp -- chmod +r /tmp/chmod-test"}
-    ${fail "--rx / --syscalls debug -- chmod +r /tmp/chmod-test"}
 
-    ${succeed "--rx / --syscalls chmod -- chmod +r /tmp/chmod-test"}
+    ${succeed "--rx / --chmod -- chmod +r /tmp/chmod-test"}
     ${succeed "--rx / --no-seccomp -- chmod +r /tmp/chmod-test"}
     ${succeed "--unrestricted-fs -- chmod +r /tmp/chmod-test"}
 
@@ -242,16 +237,15 @@ pkgs.testers.runNixOSTest {
 
     ${fail "--rx / -- chown root /tmp/chown-test"}
     ${fail "--rx / --rw /tmp -- chown root /tmp/chown-test"}
-    ${fail "--rx / --syscalls debug -- chown root /tmp/chown-test"}
 
-    ${succeed "--rx / --syscalls chown -- chown root /tmp/chown-test"}
+    ${succeed "--rx / --chown -- chown root /tmp/chown-test"}
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
     ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
 
     ### SECCOMP - EMULATION SYSCALLS ###
     ${succeed "--rx / -- setarch linux64 -- pwd"}
     ${fail "--rx / -- setarch linux32 -- pwd"}
-    ${succeed "--rx / --syscalls=emulation -- setarch linux32 -- pwd"}
+    ${succeed "--rx / --emulation -- setarch linux32 -- pwd"}
 
     ### NAMESPACES ###
     ${fail "--rx / -- unshare --user --net echo aaa"}

@@ -62,35 +62,8 @@ func setupSeccomp(cfg *config) {
 			},
 		}
 
-		var sysDebug, sysChmod, sysChown, sysXattr, sysEmulation, sysPrivileged bool
-
-		for _, group := range cfg.Syscalls {
-			switch group {
-			case "debug":
-				sysDebug = true
-
-			case "chmod":
-				sysChmod = true
-
-			case "chown":
-				sysChown = true
-
-			case "xattr":
-				sysXattr = true
-
-			case "emulation":
-				sysEmulation = true
-
-			case "privileged", "priv":
-				sysPrivileged = true
-
-			default:
-				log.Warn("Unknown syscall group '%s', skipping", group)
-			}
-		}
-
 		// most apps shouldn't be able to use features intended for debuggers
-		if !sysDebug {
+		if !cfg.DevelSys {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				// performance monitoring
 				"perf_event_open",
@@ -101,9 +74,9 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
-		// landlock can't restrict chmod as of ABI v7
+		// landlock can't restrict chmod as of ABI v10
 		// see https://github.com/landlock-lsm/linux/issues/11
-		if !sysChmod && cfg.FsRestricted {
+		if !cfg.Chmod && cfg.FsRestricted {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"chmod",
 				"fchmod",
@@ -112,8 +85,8 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
-		// landlock can't restrict chown as of ABI v7
-		if !sysChown && cfg.FsRestricted {
+		// landlock can't restrict chown as of ABI v10
+		if !cfg.Chown && cfg.FsRestricted {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"chown",
 				"chown32",
@@ -125,8 +98,8 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
-		// landlock can't restrict xattrs as of ABI v7, so block changing them (but not reading them)
-		if !sysXattr && cfg.FsRestricted {
+		// landlock can't restrict xattrs as of ABI v10, so block changing them (but not reading them)
+		if !cfg.Xattr && cfg.FsRestricted {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"setxattr",
 				"setxattrat",
@@ -141,7 +114,7 @@ func setupSeccomp(cfg *config) {
 		}
 
 		// reduce the exposed kernel surface
-		if !sysEmulation {
+		if !cfg.Emulation {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				"modify_ldt",
 			)
@@ -162,7 +135,7 @@ func setupSeccomp(cfg *config) {
 
 		// block some syscalls that unprivileged processes shouldn't be able to use anyway
 		// to reduce the exposed kernel surface
-		if !sysPrivileged {
+		if !cfg.PrivilegedSys {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
 				// @module systemd group
 				"delete_module",
@@ -186,6 +159,7 @@ func setupSeccomp(cfg *config) {
 				// disable that
 				"bpf",
 				"syslog", // dmesg
+				"userfaultfd",
 
 				// misc
 				"acct",
@@ -307,40 +281,20 @@ func setupSeccomp(cfg *config) {
 		}
 		log.Debug("Blocked syscalls: %v (EPERM), %v (ENOSYS)", blockedSyscallsEPERM, blockedSyscallsENOSYS)
 
-		var afNetlink, afInet, afOther bool
-
-		for _, af := range cfg.SocketFamilies {
-			switch af {
-			case "netlink":
-				afNetlink = true
-			case "inet":
-				afInet = true
-			case "other":
-				afOther = true
-
-			case "unix":
-				log.Warn("AF_UNIX is already allowed by default, you can remove '--af=unix'")
-			case "inet6":
-				log.Warn("AF_INET6 is included with '--af=inet', use that instead of '--af=inet6'")
-
-			default:
-				log.Warn("Unknown address family '%s', skipping", af)
-			}
-		}
-
 		blockedAf := []uint64{}
 
-		if !afNetlink {
+		// TODO: should we add more fine grained netlink permissions?
+		if !cfg.AfNetlink {
 			blockedAf = append(blockedAf, unix.AF_NETLINK)
 		}
 
-		if !afInet && cfg.NetRestricted {
+		if !cfg.AfInet && cfg.NetRestricted {
 			blockedAf = append(blockedAf, unix.AF_INET, unix.AF_INET6)
 		}
 
 		// block everything other than AF_UNIX (1), AF_INET (2), AF_INET6 (10), and
 		// AF_NETLINK (16)
-		if !afOther {
+		if !cfg.AfObscure {
 			rules = append(rules, seccompRule{
 				Action:   actionEAFNOSUPPORT,
 				Syscall:  unix.SYS_SOCKET,

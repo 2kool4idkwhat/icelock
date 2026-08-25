@@ -14,7 +14,7 @@
 
     net.connect = [ 443 ];
 
-    seccomp.socketFamilies = [ "inet" ];
+    seccomp.inetSockets = true;
 
     mdwe = true;
   };
