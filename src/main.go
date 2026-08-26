@@ -194,22 +194,22 @@ func main() {
 			},
 			&cli.IntSliceFlag{
 				Name:     flagBind,
-				Usage:    "allow binding to this TCP port",
+				Usage:    "allow binding to this TCP/UDP port",
 				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
 				Name:     flagBindAll,
-				Usage:    "allow binding to all TCP ports",
+				Usage:    "allow binding to all TCP/UDP ports",
 				Category: categoryNetwork,
 			},
 			&cli.IntSliceFlag{
 				Name:     flagConnect,
-				Usage:    "allow connecting to this TCP port",
+				Usage:    "allow connecting to this TCP/UDP port",
 				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
 				Name:     flagConnectAll,
-				Usage:    "allow connecting to all TCP ports",
+				Usage:    "allow connecting to all TCP/UDP ports",
 				Category: categoryNetwork,
 			},
 

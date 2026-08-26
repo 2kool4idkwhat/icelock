@@ -37,12 +37,13 @@ Under the hood filesystem rules are created using file descriptors (not path str
 
 ### Kernel compatibility
 
-Icelock currently targets Landlock v9 ABI
+Icelock currently targets Landlock v10 ABI
 
 You can use the `--best-effort` flag to run icelock on older kernels, but this will weaken the sandbox
 
 Landlock ABI version | Minimum upstream kernel version | New features
 ---------------------|---------------------------------|-------------
+10 | 7.2  | UDP port restrictions
 9  | 7.1  | pathname unix socket restrictions (**prevents sandbox escape via D-bus**)
 7  | 6.15 | audit logging
 6  | 6.12 | signal scoping, abstract unix socket scoping

@@ -30,6 +30,12 @@ const (
 
 	// The full set of filesystem access rights
 	accessFSAll landlock.AccessFSSet = accessFSReadWrite | accessFSMakeDev | llsys.AccessFSExecute | llsys.AccessFSResolveUnix
+
+	// The set of access rights that covers binding to TCP/UDP ports
+	accessNetBind landlock.AccessNetSet = llsys.AccessNetBindTCP | llsys.AccessNetBindUDP
+
+	// The set of access rights that covers connecting to TCP/UDP ports
+	accessNetConnect landlock.AccessNetSet = llsys.AccessNetConnectTCP | llsys.AccessNetConnectSendUDP
 )
 
 var home string
@@ -73,34 +79,38 @@ func setupLandlock(cfg *config) {
 
 	if cfg.NetRestricted {
 		if !cfg.NetBindAll {
-			handledAccessNet = handledAccessNet | llsys.AccessNetBindTCP
+			handledAccessNet |= accessNetBind
 
 			for _, port := range cfg.NetBind {
-				log.Debug("Allowing binding to TCP port %v", port)
+				log.Debug("Allowing binding to TCP/UDP port %v", port)
 
-				netRule := landlock.BindTCP(uint16(port))
-				rules = append(rules, netRule)
+				rules = append(rules,
+					landlock.BindTCP(uint16(port)),
+					landlock.BindUDP(uint16(port)),
+				)
 			}
 		}
 
 		if !cfg.NetConnectAll {
-			handledAccessNet = handledAccessNet | llsys.AccessNetConnectTCP
+			handledAccessNet |= accessNetConnect
 
 			for _, port := range cfg.NetConnect {
-				log.Debug("Allowing connecting to TCP port %v", port)
+				log.Debug("Allowing connecting to TCP/UDP port %v", port)
 
-				netRule := landlock.ConnectTCP(uint16(port))
-				rules = append(rules, netRule)
+				rules = append(rules,
+					landlock.ConnectTCP(uint16(port)),
+					landlock.ConnectSendUDP(uint16(port)),
+				)
 			}
 		}
 	}
 
 	if cfg.SignalsScoped {
-		scopedAccess = scopedAccess | llsys.ScopeSignal
+		scopedAccess |= llsys.ScopeSignal
 	}
 
 	if cfg.AbstractUnixScoped {
-		scopedAccess = scopedAccess | llsys.ScopeAbstractUnixSocket
+		scopedAccess |= llsys.ScopeAbstractUnixSocket
 	}
 
 	llConfig, err := landlock.NewConfig(handledAccessFs, handledAccessNet, scopedAccess)
