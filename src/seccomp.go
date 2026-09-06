@@ -119,16 +119,25 @@ func setupSeccomp(cfg *config) {
 				"modify_ldt",
 			)
 
-			// only allow PER_LINUX (0). Ideally we would also allow 0xFFFFFFFF (special value
-			// that's used for checking the current personality without changing it) but I don't
-			// think that's possible with libseccomp on a denylist filter
 			rules = append(rules,
+				// only allow PER_LINUX (0). Ideally we would also allow 0xFFFFFFFF (special value
+				// that's used for checking the current personality without changing it) but I don't
+				// think that's possible with libseccomp on a denylist filter
 				seccompRule{
 					Action:   actionEPERM,
 					Syscall:  unix.SYS_PERSONALITY,
 					Arg:      0,
 					Op:       seccomp.CompareNotEqual,
 					OpValue1: 0,
+				},
+
+				// https://docs.kernel.org/admin-guide/syscall-user-dispatch.html
+				seccompRule{
+					Action:   actionEPERM,
+					Syscall:  unix.SYS_PRCTL,
+					Arg:      0,
+					Op:       seccomp.CompareEqual,
+					OpValue1: unix.PR_SET_SYSCALL_USER_DISPATCH,
 				},
 			)
 		}
