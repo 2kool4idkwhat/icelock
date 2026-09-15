@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/sys/unix"
 	"os"
 	"os/exec"
@@ -18,6 +19,7 @@ const version = "26.07.1"
 const (
 	flagLogLevel   = "log-level"
 	flagBestEffort = "best-effort"
+	flagVersion    = "version"
 
 	flagUnrestrictedFs = "unrestricted-fs"
 	flagRO             = "ro"
@@ -80,9 +82,9 @@ type config struct {
 	FsUnix       []string
 
 	NetRestricted bool
-	NetBind       []int
+	NetBind       []uint16
 	NetBindAll    bool
-	NetConnect    []int
+	NetConnect    []uint16
 	NetConnectAll bool
 
 	SignalsScoped      bool
@@ -122,6 +124,8 @@ func main() {
 		Version:               version,
 		EnableShellCompletion: true,
 
+		UsageText: "icelock [options] -- [command to run in the sandbox]",
+
 		// disable the help subcommand ($ icelock help) since it's unintuitive
 		HideHelpCommand: true,
 
@@ -155,6 +159,11 @@ func main() {
 			&cli.BoolFlag{
 				Name:  flagBestEffort,
 				Usage: "disable unsupported landlock features",
+			},
+			&cli.BoolFlag{
+				Name:    flagVersion,
+				Aliases: []string{"v"},
+				Usage:   "print version details",
 			},
 
 			&cli.BoolFlag{
@@ -192,7 +201,7 @@ func main() {
 				Usage:    "don't restrict network access",
 				Category: categoryNetwork,
 			},
-			&cli.IntSliceFlag{
+			&cli.Uint16SliceFlag{
 				Name:     flagBind,
 				Usage:    "allow binding to this TCP/UDP port",
 				Category: categoryNetwork,
@@ -202,7 +211,7 @@ func main() {
 				Usage:    "allow binding to all TCP/UDP ports",
 				Category: categoryNetwork,
 			},
-			&cli.IntSliceFlag{
+			&cli.Uint16SliceFlag{
 				Name:     flagConnect,
 				Usage:    "allow connecting to this TCP/UDP port",
 				Category: categoryNetwork,
@@ -330,8 +339,11 @@ func main() {
 		},
 
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			args := cmd.Args().Slice()
+			if cmd.Bool(flagVersion) {
+				printVersionDetailsAndExit()
+			}
 
+			args := cmd.Args().Slice()
 			if len(args) == 0 {
 				cli.ShowRootCommandHelpAndExit(cmd, 1)
 			}
@@ -353,9 +365,9 @@ func main() {
 				FsUnix:       cmd.StringSlice(flagUnix),
 
 				NetRestricted: !cmd.Bool(flagUnrestrictedNet),
-				NetBind:       cmd.IntSlice(flagBind),
+				NetBind:       cmd.Uint16Slice(flagBind),
 				NetBindAll:    cmd.Bool(flagBindAll),
-				NetConnect:    cmd.IntSlice(flagConnect),
+				NetConnect:    cmd.Uint16Slice(flagConnect),
 				NetConnectAll: cmd.Bool(flagConnectAll),
 
 				SignalsScoped:      !cmd.Bool(flagSignals),
@@ -390,13 +402,6 @@ func main() {
 
 			log.SetLevel(cfg.LogLevel)
 			log.Debug("Icelock config: %+v", cfg)
-
-			landlockAbi, err := llsys.LandlockGetABIVersion()
-			if err != nil {
-				log.Error("Kernel doesn't have landlock enabled")
-				os.Exit(1)
-			}
-			log.Debug("Landlock ABI version: %d", landlockAbi)
 
 			// libcap uses libpsx which needs to read /proc/pid/task, so we have
 			// to drop caps before setting up landlock
@@ -446,4 +451,16 @@ func getAppArgs(args []string) []string {
 	}
 
 	return appArgs
+}
+
+// TODO: print the git commit
+
+func printVersionDetailsAndExit() {
+	fmt.Printf("icelock version: %s\n", version)
+
+	landlockABI, err := llsys.LandlockGetABIVersion()
+	if err == nil {
+		fmt.Printf("\nhighest landlock ABI version supported by your kernel: %d\n", landlockABI)
+	}
+	os.Exit(0)
 }

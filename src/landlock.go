@@ -85,8 +85,8 @@ func setupLandlock(cfg *config) {
 				log.Debug("Allowing binding to TCP/UDP port %v", port)
 
 				rules = append(rules,
-					landlock.BindTCP(uint16(port)),
-					landlock.BindUDP(uint16(port)),
+					landlock.BindTCP(port),
+					landlock.BindUDP(port),
 				)
 			}
 		}
@@ -98,8 +98,8 @@ func setupLandlock(cfg *config) {
 				log.Debug("Allowing connecting to TCP/UDP port %v", port)
 
 				rules = append(rules,
-					landlock.ConnectTCP(uint16(port)),
-					landlock.ConnectSendUDP(uint16(port)),
+					landlock.ConnectTCP(port),
+					landlock.ConnectSendUDP(port),
 				)
 			}
 		}
