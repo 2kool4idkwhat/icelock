@@ -34,8 +34,9 @@ pkgs.testers.runNixOSTest {
       boot.kernelPackages = pkgs.linuxPackages_latest;
 
       ### disable some unneeded stuff to reduce closure size ###
-      documentation.man.enable = false;
-      documentation.doc.enable = false;
+      documentation.enable = false;
+      security.sudo.enable = false;
+      systemd.coredump.enable = false;
     };
 
   testScript = ''
@@ -238,7 +239,6 @@ pkgs.testers.runNixOSTest {
     ${fail "--rx / -- chown root /tmp/chown-test"}
     ${fail "--rx / --rw /tmp -- chown root /tmp/chown-test"}
 
-    ${succeed "--rx / --chown -- chown root /tmp/chown-test"}
     ${succeed "--rx / --no-seccomp -- chown root /tmp/chown-test"}
     ${succeed "--unrestricted-fs -- chown root /tmp/chown-test"}
 

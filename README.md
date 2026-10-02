@@ -71,4 +71,4 @@ Landlock ABI version | Minimum upstream kernel version | New features
 
 ### Island
 
-[Island] is the official Landlock sandboxing tool. Island is designed around workspaces, and as such is very different from icelock
+[Island] is designed around workspaces, and as such is very different from icelock

@@ -44,14 +44,12 @@ const (
 	flagSeccompPrintBPF = "seccomp-print-bpf"
 	flagBlockMfdExec    = "block-mfd-exec"
 	flagUserns          = "userns"
-	flagIoUring         = "io-uring"
 	flagAfNetlink       = "netlink"
 	flagAfInet          = "inet"
 	flagAfObscure       = "obscure-socket-af"
 	flagKeyring         = "keyring"
 	flagDevelSys        = "devel"
 	flagChmod           = "chmod"
-	flagChown           = "chown"
 	flagXattr           = "xattr"
 	flagEmulation       = "emulation"
 	flagPosixMQ         = "posix-mq"
@@ -98,14 +96,12 @@ type config struct {
 	SeccompPrintBPF bool
 	BlockMfdExec    bool
 	UserNamespaces  bool
-	IoUring         bool
 	AfNetlink       bool
 	AfInet          bool
 	AfObscure       bool
 	Keyring         bool
 	DevelSys        bool
 	Chmod           bool
-	Chown           bool
 	Xattr           bool
 	Emulation       bool
 	PosixMQ         bool
@@ -262,11 +258,6 @@ func main() {
 				Category: categorySeccomp,
 			},
 			&cli.BoolFlag{
-				Name:     flagIoUring,
-				Usage:    "allow using io_uring",
-				Category: categorySeccomp,
-			},
-			&cli.BoolFlag{
 				Name:     flagAfNetlink,
 				Usage:    "allow creating netlink sockets",
 				Category: categorySeccomp,
@@ -294,11 +285,6 @@ func main() {
 			&cli.BoolFlag{
 				Name:     flagChmod,
 				Usage:    "allow chmod syscalls",
-				Category: categoryFilesystem,
-			},
-			&cli.BoolFlag{
-				Name:     flagChown,
-				Usage:    "allow chown syscalls",
 				Category: categoryFilesystem,
 			},
 			&cli.BoolFlag{
@@ -381,14 +367,12 @@ func main() {
 				SeccompPrintBPF: cmd.Bool(flagSeccompPrintBPF),
 				BlockMfdExec:    cmd.Bool(flagBlockMfdExec),
 				UserNamespaces:  cmd.Bool(flagUserns),
-				IoUring:         cmd.Bool(flagIoUring),
 				AfNetlink:       cmd.Bool(flagAfNetlink),
 				AfInet:          cmd.Bool(flagAfInet),
 				AfObscure:       cmd.Bool(flagAfObscure),
 				Keyring:         cmd.Bool(flagKeyring),
 				DevelSys:        cmd.Bool(flagDevelSys),
 				Chmod:           cmd.Bool(flagChmod),
-				Chown:           cmd.Bool(flagChown),
 				Xattr:           cmd.Bool(flagXattr),
 				Emulation:       cmd.Bool(flagEmulation),
 				PosixMQ:         cmd.Bool(flagPosixMQ),

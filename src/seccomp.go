@@ -34,7 +34,26 @@ func setupSeccomp(cfg *config) {
 		filter.SetOptimize(2)
 
 		blockedSyscallsEPERM := []string{}
-		blockedSyscallsENOSYS := []string{}
+
+		blockedSyscallsENOSYS := []string{
+			// io_uring can be used to bypass LANDLOCK_ACCESS_FS_IOCTL_DEV [1]
+			//
+			// io_uring can be used to create sockets without the socket() syscall [2]
+			// which in theory allows bypassing our seccomp-based socket family restrictions
+			//
+			// We could use a BPF filter [3] to block only the offending opcodes, but I decided
+			// it's not worth the complexity given io_uring's poor security track record [4]
+			//
+			// [1]: https://github.com/landlock-lsm/linux/issues/65
+			// [2]: https://gist.github.com/rusty-snake/4fc70c99b9ec53292c90546b790f7429
+			// [3]: https://kernelnewbies.org/Linux_7.0#Better_io_uring_support_for_filters
+			// [4]: https://security.googleblog.com/2023/06/learnings-from-kctf-vrps-42-linux.html
+			//
+			// ENOSYS so that the app falls back to something else
+			"io_uring_enter",
+			"io_uring_register",
+			"io_uring_setup",
+		}
 
 		rules := []seccompRule{
 			// modern distros should disable TIOCSTI, but we block it in case they don't.
@@ -85,19 +104,6 @@ func setupSeccomp(cfg *config) {
 			)
 		}
 
-		// landlock can't restrict chown as of ABI v10
-		if !cfg.Chown && cfg.FsRestricted {
-			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
-				"chown",
-				"chown32",
-				"fchown",
-				"fchown32",
-				"fchownat",
-				"lchown",
-				"lchown32",
-			)
-		}
-
 		// landlock can't restrict xattrs as of ABI v10, so block changing them (but not reading them)
 		if !cfg.Xattr && cfg.FsRestricted {
 			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
@@ -139,6 +145,19 @@ func setupSeccomp(cfg *config) {
 					Op:       seccomp.CompareEqual,
 					OpValue1: unix.PR_SET_SYSCALL_USER_DISPATCH,
 				},
+			)
+		}
+
+		// landlock can't restrict chown as of ABI v10
+		if !cfg.PrivilegedSys && cfg.FsRestricted {
+			blockedSyscallsEPERM = append(blockedSyscallsEPERM,
+				"chown",
+				"chown32",
+				"fchown",
+				"fchown32",
+				"fchownat",
+				"lchown",
+				"lchown32",
 			)
 		}
 
@@ -216,29 +235,6 @@ func setupSeccomp(cfg *config) {
 			// seccomp can't look into clone3() args, so we block it with ENOSYS so that the app
 			// falls back to clone(). Flatpak also does this
 			blockedSyscallsENOSYS = append(blockedSyscallsENOSYS, "clone3")
-		}
-
-		// io_uring can be used to bypass LANDLOCK_ACCESS_FS_IOCTL_DEV [1]
-		//
-		// io_uring can be used to create sockets without using the socket() syscall [2]
-		// which in theory allows bypassing our seccomp-based socket family restrictions
-		//
-		// io_uring has also caused vulnerabilities in the past [3]
-		//
-		// TODO: can we solve issues [1] and [2] by using a BPF filter? [4]
-		//
-		// [1]: https://github.com/landlock-lsm/linux/issues/65
-		// [2]: https://gist.github.com/rusty-snake/4fc70c99b9ec53292c90546b790f7429
-		// [3]: https://security.googleblog.com/2023/06/learnings-from-kctf-vrps-42-linux.html
-		// [4]: https://kernelnewbies.org/Linux_7.0#Better_io_uring_support_for_filters
-		//
-		// ENOSYS so that the app falls back to something else
-		if !cfg.IoUring {
-			blockedSyscallsENOSYS = append(blockedSyscallsENOSYS,
-				"io_uring_enter",
-				"io_uring_register",
-				"io_uring_setup",
-			)
 		}
 
 		// most apps don't need to access the kernel keyring
