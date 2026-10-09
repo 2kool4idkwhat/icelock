@@ -115,10 +115,9 @@ type config struct {
 
 func main() {
 	cmd := &cli.Command{
-		Name:                  "icelock",
-		Usage:                 "tool for restricting programs with landlock",
-		Version:               version,
-		EnableShellCompletion: true,
+		Name:    "icelock",
+		Usage:   "tool for restricting programs with landlock",
+		Version: version,
 
 		UsageText: "icelock [options] -- [command to run in the sandbox]",
 
@@ -164,7 +163,7 @@ func main() {
 
 			&cli.BoolFlag{
 				Name:     flagUnrestrictedFs,
-				Usage:    "don't restrict filesystem access",
+				Usage:    "don't restrict filesystem access (dangerous!)",
 				Category: categoryFilesystem,
 			},
 			&cli.StringSliceFlag{
@@ -231,7 +230,7 @@ func main() {
 
 			&cli.BoolFlag{
 				Name:     flagAudit,
-				Usage:    "turn on logging for the app",
+				Usage:    "turn on logging for the landlock domain",
 				Category: categoryAudit,
 				Sources:  cli.EnvVars("ICELOCK_AUDIT"),
 			},

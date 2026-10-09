@@ -1,7 +1,6 @@
 {
   lib,
   buildGoModule,
-  installShellFiles,
   pkg-config,
   libseccomp,
   ...
@@ -11,24 +10,15 @@ buildGoModule {
   name = "icelock";
   src = ./src;
 
-  vendorHash = "sha256-KAQsQJ/5OaNMTWvhqekO80VD5o0VWfGxar7zT/Ic4Lg=";
+  vendorHash = "sha256-r78I1T49dWUjP0ysc9WUVORZkneyMlGz44JMnTzTDPY=";
 
   nativeBuildInputs = [
-    installShellFiles
-
     pkg-config
   ];
 
   buildInputs = [
     libseccomp
   ];
-
-  postInstall = ''
-    installShellCompletion --cmd icelock \
-      --bash <($out/bin/icelock completion bash) \
-      --fish <($out/bin/icelock completion fish) \
-      --zsh <($out/bin/icelock completion zsh)
-  '';
 
   meta = {
     description = "Tool for restricting programs with Landlock (and seccomp)";
