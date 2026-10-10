@@ -81,13 +81,16 @@ func setupLandlock(cfg *config) {
 		if !cfg.NetBindAll {
 			handledAccessNet |= accessNetBind
 
-			for _, port := range cfg.NetBind {
-				log.Debug("Allowing binding to TCP/UDP port %v", port)
+			for _, port := range cfg.NetBindTCP {
+				log.Debug("Allowing binding to TCP port %v", port)
 
-				rules = append(rules,
-					landlock.BindTCP(port),
-					landlock.BindUDP(port),
-				)
+				rules = append(rules, landlock.BindTCP(port))
+			}
+
+			for _, port := range cfg.NetBindUDP {
+				log.Debug("Allowing binding to UDP port %v", port)
+
+				rules = append(rules, landlock.BindUDP(port))
 			}
 		}
 

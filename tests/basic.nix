@@ -176,13 +176,14 @@ pkgs.testers.runNixOSTest {
     ${tcpBindTest "fail" ""}
     ${tcpBindTest "fail" "--inet"}
     ${tcpBindTest "fail" "--no-seccomp"}
-    ${tcpBindTest "fail" "--bind 8000"}
+    ${tcpBindTest "fail" "--bind-tcp 8000"}
     ${tcpBindTest "fail" "--inet --connect 8000"}
     ${tcpBindTest "fail" "--inet --connect-all"}
+    ${tcpBindTest "fail" "--inet --bind-udp 8000"}
 
-    ${tcpBindTest "succeed" "--inet --bind 8000"}
+    ${tcpBindTest "succeed" "--inet --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--inet --bind-all"}
-    ${tcpBindTest "succeed" "--no-seccomp --bind 8000"}
+    ${tcpBindTest "succeed" "--no-seccomp --bind-tcp 8000"}
     ${tcpBindTest "succeed" "--unrestricted-net"}
 
     ### IPC - SIGNALS ###
@@ -219,9 +220,9 @@ pkgs.testers.runNixOSTest {
     ${succeedCmd "${./keyring.sh} --no-seccomp"}
 
     ### SECCOMP - DEBUG SYSCALLS ###
-    ${fail "--unrestricted-fs -- strace pwd"}
-    ${succeed "--unrestricted-fs --devel -- strace pwd"}
-    ${succeed "--unrestricted-fs --no-seccomp -- strace pwd"}
+    ${fail "--unrestricted-fs -- strace --trace=exit_group pwd"}
+    ${succeed "--unrestricted-fs --devel -- strace --trace=exit_group pwd"}
+    ${succeed "--unrestricted-fs --no-seccomp -- strace --trace=exit_group pwd"}
 
     ### SECCOMP - CHMOD SYSCALLS ###
     ${succeedCmd "mkdir -p /tmp/chmod-test"}

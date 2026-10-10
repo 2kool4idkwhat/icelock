@@ -77,10 +77,15 @@ in
         default = true;
       };
 
-      bind = mkOption {
+      bindTCP = mkOption {
         type = listOf int;
         default = [ ];
       };
+      bindUDP = mkOption {
+        type = listOf int;
+        default = [ ];
+      };
+
       bindAll = mkOption {
         type = bool;
         default = false;
@@ -185,7 +190,8 @@ in
           (boolOpt "--xattr" config.seccomp.xattr)
 
           (boolOpt "--unrestricted-net" (!config.net.restrict))
-          (portListOpt "--bind" config.net.bind)
+          (portListOpt "--bind-tcp" config.net.bindTCP)
+          (portListOpt "--bind-udp" config.net.bindUDP)
           (boolOpt "--bind-all" config.net.bindAll)
           (portListOpt "--connect" config.net.connect)
           (boolOpt "--connect-all" config.net.connectAll)

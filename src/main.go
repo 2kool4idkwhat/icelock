@@ -28,7 +28,8 @@ const (
 	flagUnix           = "unix"
 
 	flagUnrestrictedNet = "unrestricted-net"
-	flagBind            = "bind"
+	flagBindTCP         = "bind-tcp"
+	flagBindUDP         = "bind-udp"
 	flagBindAll         = "bind-all"
 	flagConnect         = "connect"
 	flagConnectAll      = "connect-all"
@@ -80,7 +81,8 @@ type config struct {
 	FsUnix       []string
 
 	NetRestricted bool
-	NetBind       []uint16
+	NetBindTCP    []uint16
+	NetBindUDP    []uint16
 	NetBindAll    bool
 	NetConnect    []uint16
 	NetConnectAll bool
@@ -197,8 +199,13 @@ func main() {
 				Category: categoryNetwork,
 			},
 			&cli.Uint16SliceFlag{
-				Name:     flagBind,
-				Usage:    "allow binding to this TCP/UDP port",
+				Name:     flagBindTCP,
+				Usage:    "allow binding to this TCP port",
+				Category: categoryNetwork,
+			},
+			&cli.Uint16SliceFlag{
+				Name:     flagBindUDP,
+				Usage:    "allow binding to this UDP port",
 				Category: categoryNetwork,
 			},
 			&cli.BoolFlag{
@@ -350,7 +357,8 @@ func main() {
 				FsUnix:       cmd.StringSlice(flagUnix),
 
 				NetRestricted: !cmd.Bool(flagUnrestrictedNet),
-				NetBind:       cmd.Uint16Slice(flagBind),
+				NetBindTCP:    cmd.Uint16Slice(flagBindTCP),
+				NetBindUDP:    cmd.Uint16Slice(flagBindUDP),
 				NetBindAll:    cmd.Bool(flagBindAll),
 				NetConnect:    cmd.Uint16Slice(flagConnect),
 				NetConnectAll: cmd.Bool(flagConnectAll),
