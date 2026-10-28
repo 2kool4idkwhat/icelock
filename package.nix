@@ -10,7 +10,7 @@ buildGoModule {
   name = "icelock";
   src = ./src;
 
-  vendorHash = "sha256-r78I1T49dWUjP0ysc9WUVORZkneyMlGz44JMnTzTDPY=";
+  vendorHash = "sha256-BnzDW0lmYSva2Ddc0Hwg/3AZ/cdU3nleEl+R2HJAizs=";
 
   nativeBuildInputs = [
     pkg-config
